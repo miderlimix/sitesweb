@@ -1,0 +1,2325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>NOIR STUDIO PRO</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        :root {
+            --bg-primary: #050505;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #121212;
+            --bg-control: #1a1a1a;
+            --bg-control-active: #2a2a2a;
+            --line-primary: #ffffff;
+            --line-secondary: #666666;
+            --line-tertiary: #333333;
+            --accent-play: #00ff88;
+            --accent-rec: #ff0044;
+            --accent-solo: #ffcc00;
+            --accent-fx: #00ccff;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --danger: #ff4444;
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        /* HEADER */
+        .header {
+            height: 60px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--line-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            color: var(--line-primary);
+        }
+        
+        .logo span {
+            color: var(--accent-play);
+        }
+        
+        .transport {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .btn-transport {
+            width: 50px;
+            height: 50px;
+            border: 1px solid var(--line-tertiary);
+            background: var(--bg-control);
+            color: var(--text-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.1s;
+        }
+        
+        .btn-transport:active {
+            background: var(--bg-control-active);
+            transform: scale(0.95);
+        }
+        
+        .btn-play {
+            border-color: var(--accent-play);
+            color: var(--accent-play);
+        }
+        
+        .btn-play.active {
+            background: var(--accent-play);
+            color: var(--bg-primary);
+            box-shadow: 0 0 20px var(--accent-play);
+        }
+        
+        .btn-rec {
+            border-color: var(--accent-rec);
+            color: var(--accent-rec);
+        }
+        
+        .btn-rec.active {
+            background: var(--accent-rec);
+            color: white;
+            animation: pulse-rec 1s infinite;
+        }
+        
+        @keyframes pulse-rec {
+            0%, 100% { box-shadow: 0 0 10px var(--accent-rec); }
+            50% { box-shadow: 0 0 30px var(--accent-rec); }
+        }
+        
+        .bpm-display {
+            background: var(--bg-control);
+            border: 1px solid var(--line-tertiary);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .time-display {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            color: var(--accent-play);
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        /* NAVIGATION TABS */
+        .nav-tabs {
+            height: 50px;
+            background: var(--bg-secondary);
+            display: flex;
+            border-bottom: 1px solid var(--line-tertiary);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            min-width: 80px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .nav-tab.active {
+            color: var(--line-primary);
+            border-bottom-color: var(--line-primary);
+        }
+        
+        .nav-tab svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        
+        /* MAIN CONTENT */
+        .main-content {
+            height: calc(100vh - 110px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        /* ARRANGE SCREEN */
+        .timeline-container {
+            height: 60%;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .timeline-ruler {
+            height: 30px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--line-tertiary);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 10px;
+            color: var(--text-secondary);
+            position: relative;
+        }
+        
+        .timeline-tracks {
+            height: calc(100% - 30px);
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .track-lane {
+            height: 80px;
+            border-bottom: 1px solid var(--line-tertiary);
+            position: relative;
+            background: var(--bg-secondary);
+            display: flex;
+        }
+        
+        .track-header {
+            width: 120px;
+            background: var(--bg-tertiary);
+            border-right: 1px solid var(--line-tertiary);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        .track-name {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .track-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-track {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--line-tertiary);
+            background: var(--bg-control);
+            color: var(--text-secondary);
+            font-size: 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-track.mute.active {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+        
+        .btn-track.solo.active {
+            background: var(--accent-solo);
+            color: black;
+            border-color: var(--accent-solo);
+        }
+        
+        .btn-track.rec-arm.active {
+            background: var(--accent-rec);
+            color: white;
+            border-color: var(--accent-rec);
+        }
+        
+        .track-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .clip {
+            position: absolute;
+            height: 60px;
+            top: 10px;
+            background: var(--bg-control-active);
+            border: 1px solid var(--line-secondary);
+            border-radius: 4px;
+            min-width: 50px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        
+        .clip.selected {
+            border-color: var(--accent-play);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+        
+        .playhead {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: var(--accent-play);
+            pointer-events: none;
+            z-index: 20;
+            box-shadow: 0 0 10px var(--accent-play);
+        }
+        
+        .track-controls-panel {
+            height: 40%;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--line-tertiary);
+            padding: 15px;
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+        }
+        
+        .control-group {
+            min-width: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+        
+        /* KNOB CONTROL */
+        .knob-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .knob {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--bg-control);
+            border: 2px solid var(--line-tertiary);
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .knob::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 20px;
+            background: var(--line-primary);
+            border-radius: 2px;
+        }
+        
+        .knob.active {
+            border-color: var(--accent-fx);
+            box-shadow: 0 0 15px rgba(0, 204, 255, 0.3);
+        }
+        
+        .knob-value {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--accent-fx);
+        }
+        
+        /* MIXER SCREEN */
+        .mixer-container {
+            display: flex;
+            height: 100%;
+            padding: 20px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        
+        .channel-strip {
+            min-width: 70px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 5px;
+            gap: 10px;
+        }
+        
+        .channel-strip.master {
+            min-width: 90px;
+            background: var(--bg-tertiary);
+            border-color: var(--line-secondary);
+        }
+        
+        .channel-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .vu-meter {
+            width: 12px;
+            height: 150px;
+            background: var(--bg-control);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .vu-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, var(--accent-play) 0%, var(--accent-solo) 70%, var(--accent-rec) 100%);
+            transition: height 0.05s;
+        }
+        
+        .fader-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .fader {
+            width: 50px;
+            height: 200px;
+            background: var(--bg-control);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 4px;
+            position: relative;
+            touch-action: none;
+        }
+        
+        .fader-track {
+            position: absolute;
+            left: 50%;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: var(--line-tertiary);
+            transform: translateX(-50%);
+        }
+        
+        .fader-handle {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 30px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--line-primary);
+            border-radius: 4px;
+            top: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        
+        .fader-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: var(--line-primary);
+            transform: translateY(-50%);
+        }
+        
+        .pan-knob {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .pan-knob .knob {
+            width: 50px;
+            height: 50px;
+        }
+        
+        /* FX SCREEN */
+        .fx-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .fx-track-selector {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        
+        .fx-track-btn {
+            min-width: 80px;
+            padding: 12px 20px;
+            background: var(--bg-control);
+            border: 1px solid var(--line-tertiary);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .fx-track-btn.active {
+            background: var(--accent-fx);
+            color: black;
+            border-color: var(--accent-fx);
+        }
+        
+        .fx-rack {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .fx-slot {
+            background: var(--bg-secondary);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .fx-slot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .fx-slot-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .fx-bypass {
+            width: 40px;
+            height: 24px;
+            background: var(--bg-control);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .fx-bypass::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: var(--line-tertiary);
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .fx-bypass.active {
+            background: var(--accent-play);
+            border-color: var(--accent-play);
+        }
+        
+        .fx-bypass.active::after {
+            left: 18px;
+            background: white;
+        }
+        
+        .fx-selector {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-control);
+            border: 1px solid var(--line-tertiary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .fx-params {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 20px;
+        }
+        
+        .fx-param {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .fx-param-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        /* INSTRUMENTS SCREEN */
+        .instruments-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .instrument-tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--line-tertiary);
+        }
+        
+        .instrument-tab {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .instrument-tab.active {
+            color: var(--line-primary);
+            border-bottom-color: var(--accent-play);
+        }
+        
+        .instrument-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .instrument-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            padding: 20px;
+        }
+        
+        .instrument-panel.active {
+            display: block;
+        }
+        
+        /* DRUM PADS */
+        .drum-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            height: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .drum-pad {
+            background: var(--bg-control);
+            border: 2px solid var(--line-tertiary);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .drum-pad:active, .drum-pad.active {
+            background: var(--line-primary);
+            border-color: var(--line-primary);
+            transform: scale(0.95);
+        }
+        
+        .drum-pad.active {
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+        
+        .pad-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+        
+        .pad-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .drum-pad:active .pad-name, .drum-pad.active .pad-name {
+            color: black;
+        }
+        
+        /* PIANO */
+        .piano-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .piano-controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .piano-keys {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow-x: auto;
+            overflow-y: hidden;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .white-key {
+            min-width: 50px;
+            height: 100%;
+            background: var(--line-primary);
+            border: 1px solid var(--bg-control);
+            border-radius: 0 0 4px 4px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .white-key:active, .white-key.active {
+            background: var(--accent-play);
+            transform: translateY(2px);
+        }
+        
+        .black-key {
+            position: absolute;
+            width: 30px;
+            height: 60%;
+            background: var(--bg-primary);
+            border: 1px solid var(--line-secondary);
+            border-radius: 0 0 4px 4px;
+            z-index: 2;
+        }
+        
+        .black-key:active, .black-key.active {
+            background: var(--accent-fx);
+        }
+        
+        /* SYNTH */
+        .synth-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+        
+        .oscillator-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--line-tertiary);
+            padding-bottom: 10px;
+        }
+        
+        .oscillators-row {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+        }
+        
+        .oscillator {
+            min-width: 150px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .waveform-selector {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .waveform-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-control);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+        
+        .waveform-btn.active {
+            background: var(--accent-fx);
+            color: black;
+            border-color: var(--accent-fx);
+        }
+        
+        .adsr-visual {
+            height: 100px;
+            background: var(--bg-control);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 4px;
+            position: relative;
+            margin: 10px 0;
+        }
+        
+        .adsr-path {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* MASTER SCREEN */
+        .master-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .visualizer-container {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            background: var(--bg-secondary);
+            border: 2px solid var(--line-tertiary);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #masterVisualizer {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .master-controls {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .master-fader-container {
+            height: 250px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .export-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .btn-export {
+            padding: 20px;
+            background: var(--bg-control);
+            border: 2px solid var(--line-tertiary);
+            color: var(--text-primary);
+            border-radius: 8px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-export:active {
+            background: var(--accent-play);
+            color: black;
+            border-color: var(--accent-play);
+        }
+        
+        /* MODALS */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--line-tertiary);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-modal {
+            flex: 1;
+            padding: 15px;
+            background: var(--bg-control);
+            border: 1px solid var(--line-tertiary);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .btn-modal.primary {
+            background: var(--accent-play);
+            color: black;
+            border-color: var(--accent-play);
+        }
+        
+        /* START OVERLAY */
+        .start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            gap: 30px;
+        }
+        
+        .start-overlay.hidden {
+            display: none;
+        }
+        
+        .start-logo {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 10px;
+            color: var(--line-primary);
+            text-align: center;
+        }
+        
+        .start-logo span {
+            color: var(--accent-play);
+        }
+        
+        .btn-start {
+            padding: 20px 60px;
+            background: transparent;
+            border: 2px solid var(--line-primary);
+            color: var(--line-primary);
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-radius: 50px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+            50% { box-shadow: 0 0 40px rgba(255,255,255,0.5); }
+        }
+        
+        .btn-start:active {
+            background: var(--line-primary);
+            color: black;
+        }
+        
+        /* SCROLLBARS */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--line-tertiary);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--line-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- START OVERLAY -->
+    <div class="start-overlay" id="startOverlay">
+        <div class="start-logo">NOIR<span>STUDIO</span></div>
+        <button class="btn-start" onclick="startStudio()">INICIAR</button>
+        <p style="color: var(--text-secondary); font-size: 12px; text-align: center; max-width: 300px;">
+            Toque para activar el motor de audio.<br>
+            Optimizado para producción musical táctil.
+        </p>
+    </div>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo">NOIR<span>PRO</span></div>
+        
+        <div class="transport">
+            <button class="btn-transport" onclick="stop()">⏹</button>
+            <button class="btn-transport btn-play" id="playBtn" onclick="togglePlay()">▶</button>
+            <button class="btn-transport btn-rec" id="recBtn" onclick="toggleRec()">⏺</button>
+            <div class="bpm-display" onclick="tapTempo()">120</div>
+            <div class="time-display" id="timeDisplay">00:00</div>
+        </div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showScreen('arrange')">
+            <svg viewBox="0 0 24 24"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 10h2v7H7v-7zm4-3h2v10h-2V7zm4 6h2v4h-2v-4z"/></svg>
+            Arrange
+        </button>
+        <button class="nav-tab" onclick="showScreen('mixer')">
+            <svg viewBox="0 0 24 24"><path d="M3 17h2v4H3v-4zm4-8h2v12H7V9zm4-4h2v16h-2V5zm4 4h2v12h-2V9zm4-2h2v14h-2V7z"/></svg>
+            Mixer
+        </button>
+        <button class="nav-tab" onclick="showScreen('fx')">
+            <svg viewBox="0 0 24 24"><path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/></svg>
+            FX
+        </button>
+        <button class="nav-tab" onclick="showScreen('instruments')">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            Instruments
+        </button>
+        <button class="nav-tab" onclick="showScreen('master')">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/></svg>
+            Master
+        </button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- ARRANGE SCREEN -->
+        <div class="screen active" id="screen-arrange">
+            <div class="timeline-container">
+                <div class="timeline-ruler">
+                    <span>1.1.1</span>
+                    <span style="margin-left: 100px;">1.2.1</span>
+                    <span style="margin-left: 100px;">1.3.1</span>
+                    <span style="margin-left: 100px;">1.4.1</span>
+                    <span style="margin-left: 100px;">2.1.1</span>
+                    <div class="playhead" id="playhead" style="left: 0%;"></div>
+                </div>
+                <div class="timeline-tracks" id="timelineTracks">
+                    <!-- Tracks generated by JS -->
+                </div>
+            </div>
+            
+            <div class="track-controls-panel" id="trackControlsPanel">
+                <div class="control-group">
+                    <div class="knob-container">
+                        <div class="knob" id="knob1" ontouchstart="startKnob(event, 'volume')" onmousedown="startKnob(event, 'volume')"></div>
+                        <div class="knob-value">0dB</div>
+                    </div>
+                    <div class="control-label">Volume</div>
+                </div>
+                <div class="control-group">
+                    <div class="knob-container">
+                        <div class="knob" id="knob2" ontouchstart="startKnob(event, 'pan')" onmousedown="startKnob(event, 'pan')"></div>
+                        <div class="knob-value">C</div>
+                    </div>
+                    <div class="control-label">Pan</div>
+                </div>
+                <div class="control-group">
+                    <div class="knob-container">
+                        <div class="knob" id="knob3" ontouchstart="startKnob(event, 'filter')" onmousedown="startKnob(event, 'filter')"></div>
+                        <div class="knob-value">20k</div>
+                    </div>
+                    <div class="control-label">Filter</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIXER SCREEN -->
+        <div class="screen" id="screen-mixer">
+            <div class="mixer-container" id="mixerContainer">
+                <!-- Channel strips generated by JS -->
+            </div>
+        </div>
+
+        <!-- FX SCREEN -->
+        <div class="screen" id="screen-fx">
+            <div class="fx-container">
+                <div class="fx-track-selector" id="fxTrackSelector">
+                    <!-- Track buttons generated by JS -->
+                </div>
+                
+                <div class="fx-rack" id="fxRack">
+                    <!-- 5 FX Slots -->
+                    <div class="fx-slot">
+                        <div class="fx-slot-header">
+                            <span class="fx-slot-title">Slot 1: Dynamics</span>
+                            <div class="fx-bypass" onclick="toggleBypass(this)"></div>
+                        </div>
+                        <select class="fx-selector" onchange="changeEffect(0, this.value)">
+                            <option value="">-- Select Effect --</option>
+                            <option value="compressor">Compressor</option>
+                            <option value="limiter">Limiter</option>
+                            <option value="gate">Noise Gate</option>
+                            <option value="deesser">De-Esser</option>
+                        </select>
+                        <div class="fx-params" id="fx-params-0"></div>
+                    </div>
+
+                    <div class="fx-slot">
+                        <div class="fx-slot-header">
+                            <span class="fx-slot-title">Slot 2: EQ</span>
+                            <div class="fx-bypass" onclick="toggleBypass(this)"></div>
+                        </div>
+                        <select class="fx-selector" onchange="changeEffect(1, this.value)">
+                            <option value="">-- Select Effect --</option>
+                            <option value="eq4">Parametric EQ 4-Band</option>
+                            <option value="lowpass">Low Pass Filter</option>
+                            <option value="highpass">High Pass Filter</option>
+                            <option value="notch">Notch Filter</option>
+                        </select>
+                        <div class="fx-params" id="fx-params-1"></div>
+                    </div>
+
+                    <div class="fx-slot">
+                        <div class="fx-slot-header">
+                            <span class="fx-slot-title">Slot 3: Space/Time</span>
+                            <div class="fx-bypass" onclick="toggleBypass(this)"></div>
+                        </div>
+                        <select class="fx-selector" onchange="changeEffect(2, this.value)">
+                            <option value="">-- Select Effect --</option>
+                            <option value="reverb">Reverb</option>
+                            <option value="delay">Delay</option>
+                            <option value="chorus">Chorus</option>
+                            <option value="flanger">Flanger</option>
+                            <option value="phaser">Phaser</option>
+                        </select>
+                        <div class="fx-params" id="fx-params-2"></div>
+                    </div>
+
+                    <div class="fx-slot">
+                        <div class="fx-slot-header">
+                            <span class="fx-slot-title">Slot 4: Character</span>
+                            <div class="fx-bypass" onclick="toggleBypass(this)"></div>
+                        </div>
+                        <select class="fx-selector" onchange="changeEffect(3, this.value)">
+                            <option value="">-- Select Effect --</option>
+                            <option value="overdrive">Overdrive</option>
+                            <option value="bitcrusher">Bitcrusher</option>
+                            <option value="saturation">Saturation</option>
+                        </select>
+                        <div class="fx-params" id="fx-params-3"></div>
+                    </div>
+
+                    <div class="fx-slot">
+                        <div class="fx-slot-header">
+                            <span class="fx-slot-title">Slot 5: Voice/Pitch</span>
+                            <div class="fx-bypass" onclick="toggleBypass(this)"></div>
+                        </div>
+                        <select class="fx-selector" onchange="changeEffect(4, this.value)">
+                            <option value="">-- Select Effect --</option>
+                            <option value="autotune">Autotune Pro</option>
+                            <option value="pitchshift">Pitch Shifter</option>
+                            <option value="formant">Formant Shifter</option>
+                            <option value="vocoder">Vocoder</option>
+                            <option value="harmonizer">Harmonizer</option>
+                            <option value="octaver">Octaver</option>
+                        </select>
+                        <div class="fx-params" id="fx-params-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INSTRUMENTS SCREEN -->
+        <div class="screen" id="screen-instruments">
+            <div class="instruments-container">
+                <div class="instrument-tabs">
+                    <button class="instrument-tab active" onclick="showInstrument('drums')">Drums</button>
+                    <button class="instrument-tab" onclick="showInstrument('piano')">Piano</button>
+                    <button class="instrument-tab" onclick="showInstrument('synth')">Synth</button>
+                </div>
+                
+                <div class="instrument-content">
+                    <!-- DRUMS -->
+                    <div class="instrument-panel active" id="inst-drums">
+                        <div class="drum-grid" id="drumGrid">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- PIANO -->
+                    <div class="instrument-panel" id="inst-piano">
+                        <div class="piano-container">
+                            <div class="piano-controls">
+                                <button class="btn-track" onclick="shiftOctave(-1)">-Oct</button>
+                                <span id="octaveDisplay">C3-C5</span>
+                                <button class="btn-track" onclick="shiftOctave(1)">+Oct</button>
+                            </div>
+                            <div class="piano-keys" id="pianoKeys">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SYNTH -->
+                    <div class="instrument-panel" id="inst-synth">
+                        <div class="synth-container">
+                            <div class="oscillator-section">
+                                <div class="section-title">Oscillators</div>
+                                <div class="oscillators-row">
+                                    <div class="oscillator">
+                                        <div class="control-label">OSC 1</div>
+                                        <div class="waveform-selector">
+                                            <button class="waveform-btn active" onclick="setWaveform(0, 'sine')">Sin</button>
+                                            <button class="waveform-btn" onclick="setWaveform(0, 'sawtooth')">Saw</button>
+                                            <button class="waveform-btn" onclick="setWaveform(0, 'square')">Sqr</button>
+                                            <button class="waveform-btn" onclick="setWaveform(0, 'triangle')">Tri</button>
+                                        </div>
+                                        <div class="knob-container" style="margin: 0 auto;">
+                                            <div class="knob" style="width: 60px; height: 60px;" ontouchstart="startKnob(event, 'osc1detune')" onmousedown="startKnob(event, 'osc1detune')"></div>
+                                        </div>
+                                        <div class="control-label">Detune</div>
+                                    </div>
+                                    <div class="oscillator">
+                                        <div class="control-label">OSC 2</div>
+                                        <div class="waveform-selector">
+                                            <button class="waveform-btn" onclick="setWaveform(1, 'sine')">Sin</button>
+                                            <button class="waveform-btn active" onclick="setWaveform(1, 'sawtooth')">Saw</button>
+                                            <button class="waveform-btn" onclick="setWaveform(1, 'square')">Sqr</button>
+                                            <button class="waveform-btn" onclick="setWaveform(1, 'triangle')">Tri</button>
+                                        </div>
+                                        <div class="knob-container" style="margin: 0 auto;">
+                                            <div class="knob" style="width: 60px; height: 60px;" ontouchstart="startKnob(event, 'osc2detune')" onmousedown="startKnob(event, 'osc2detune')"></div>
+                                        </div>
+                                        <div class="control-label">Detune</div>
+                                    </div>
+                                    <div class="oscillator">
+                                        <div class="control-label">OSC 3 (Sub)</div>
+                                        <div class="waveform-selector">
+                                            <button class="waveform-btn" onclick="setWaveform(2, 'sine')">Sin</button>
+                                            <button class="waveform-btn" onclick="setWaveform(2, 'sawtooth')">Saw</button>
+                                            <button class="waveform-btn" onclick="setWaveform(2, 'square')">Sqr</button>
+                                            <button class="waveform-btn active" onclick="setWaveform(2, 'triangle')">Tri</button>
+                                        </div>
+                                        <div class="knob-container" style="margin: 0 auto;">
+                                            <div class="knob" style="width: 60px; height: 60px;" ontouchstart="startKnob(event, 'osc3gain')" onmousedown="startKnob(event, 'osc3gain')"></div>
+                                        </div>
+                                        <div class="control-label">Level</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="oscillator-section">
+                                <div class="section-title">Filter & Envelope</div>
+                                <div class="fx-params">
+                                    <div class="fx-param">
+                                        <div class="knob-container">
+                                            <div class="knob" ontouchstart="startKnob(event, 'filterCutoff')" onmousedown="startKnob(event, 'filterCutoff')"></div>
+                                        </div>
+                                        <div class="fx-param-label">Cutoff</div>
+                                    </div>
+                                    <div class="fx-param">
+                                        <div class="knob-container">
+                                            <div class="knob" ontouchstart="startKnob(event, 'filterRes')" onmousedown="startKnob(event, 'filterRes')"></div>
+                                        </div>
+                                        <div class="fx-param-label">Resonance</div>
+                                    </div>
+                                    <div class="fx-param">
+                                        <div class="knob-container">
+                                            <div class="knob" ontouchstart="startKnob(event, 'attack')" onmousedown="startKnob(event, 'attack')"></div>
+                                        </div>
+                                        <div class="fx-param-label">Attack</div>
+                                    </div>
+                                    <div class="fx-param">
+                                        <div class="knob-container">
+                                            <div class="knob" ontouchstart="startKnob(event, 'decay')" onmousedown="startKnob(event, 'decay')"></div>
+                                        </div>
+                                        <div class="fx-param-label">Decay</div>
+                                    </div>
+                                    <div class="fx-param">
+                                        <div class="knob-container">
+                                            <div class="knob" ontouchstart="startKnob(event, 'sustain')" onmousedown="startKnob(event, 'sustain')"></div>
+                                        </div>
+                                        <div class="fx-param-label">Sustain</div>
+                                    </div>
+                                    <div class="fx-param">
+                                        <div class="knob-container">
+                                            <div class="knob" ontouchstart="startKnob(event, 'release')" onmousedown="startKnob(event, 'release')"></div>
+                                        </div>
+                                        <div class="fx-param-label">Release</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MASTER SCREEN -->
+        <div class="screen" id="screen-master">
+            <div class="master-container">
+                <div class="visualizer-container">
+                    <canvas id="masterVisualizer"></canvas>
+                </div>
+                
+                <div class="master-controls">
+                    <div class="master-fader-container">
+                        <div class="fader" style="height: 200px;" ontouchstart="startFader(event, 'master')" onmousedown="startFader(event, 'master')">
+                            <div class="fader-track"></div>
+                            <div class="fader-handle" id="masterFader" style="top: 20%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="export-section">
+                        <button class="btn-export" onclick="exportProject('wav')">
+                            <span>⬇</span> Export WAV
+                        </button>
+                        <button class="btn-export" onclick="exportProject('mp3')">
+                            <span>⬇</span> Export MP3
+                        </button>
+                        <button class="btn-export" onclick="exportStems()">
+                            <span>⬇</span> Export Stems
+                        </button>
+                        <button class="btn-export" onclick="saveProject()">
+                            <span>💾</span> Save Project
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==================== AUDIO ENGINE ====================
+        let audioContext;
+        let isPlaying = false;
+        let isRecording = false;
+        let currentBPM = 120;
+        let currentScreen = 'arrange';
+        let selectedTrack = 0;
+        
+        // Tone.js objects
+        let masterCompressor;
+        let masterLimiter;
+        let analyser;
+        let recorder;
+        let tracks = [];
+        let synths = [];
+        let effects = [];
+        
+        // Drum samples
+        const drumSounds = {
+            'kick': 'C1',
+            'snare': 'D1',
+            'clap': 'E1',
+            'hat': 'F1',
+            'openhat': 'G1',
+            'tom': 'A1',
+            'crash': 'B1',
+            'perc': 'C2',
+            'fx1': 'D2',
+            'fx2': 'E2',
+            'fx3': 'F2',
+            'shaker': 'G2'
+        };
+        
+        let drumSynth;
+        let polySynth;
+        let currentOctave = 3;
+        
+        // Initialize audio
+        async function startStudio() {
+            document.getElementById('startOverlay').classList.add('hidden');
+            
+            await Tone.start();
+            audioContext = Tone.context;
+            
+            // Master chain
+            masterCompressor = new Tone.Compressor({
+                threshold: -12,
+                ratio: 3,
+                attack: 0.003,
+                release: 0.25
+            }).toDestination();
+            
+            masterLimiter = new Tone.Limiter(-1).connect(masterCompressor);
+            
+            analyser = new Tone.Analyser('waveform', 256);
+            masterLimiter.connect(analyser);
+            
+            // Initialize tracks (8 tracks)
+            for (let i = 0; i < 8; i++) {
+                initTrack(i);
+            }
+            
+            // Initialize drum machine
+            initDrumMachine();
+            
+            // Initialize synth
+            initSynth();
+            
+            // Initialize piano
+            initPiano();
+            
+            // Start visualizer
+            drawVisualizer();
+            
+            // Setup transport
+            Tone.Transport.bpm.value = currentBPM;
+            
+            // Initialize UI
+            initTimeline();
+            initMixer();
+            initFxPanel();
+            
+            console.log('NOIR STUDIO PRO Iniciado');
+        }
+        
+        function initTrack(index) {
+            const track = {
+                index: index,
+                name: `Track ${index + 1}`,
+                volume: 0,
+                pan: 0,
+                mute: false,
+                solo: false,
+                recArm: false,
+                clips: [],
+                effects: [{}, {}, {}, {}, {}],
+                channel: new Tone.Channel(0, 0).connect(masterLimiter),
+                recorder: null
+            };
+            
+            // Create effects chain for each slot
+            track.effectsChain = new Tone.Gain(1).connect(track.channel);
+            let currentNode = track.effectsChain;
+            
+            tracks.push(track);
+        }
+        
+        function initDrumMachine() {
+            drumSynth = new Tone.MembraneSynth({
+                pitchDecay: 0.05,
+                octaves: 4,
+                oscillator: { type: 'sine' },
+                envelope: {
+                    attack: 0.001,
+                    decay: 0.4,
+                    sustain: 0.01,
+                    release: 1.4,
+                    attackCurve: 'exponential'
+                }
+            }).connect(masterLimiter);
+            
+            // Additional synths for different drum sounds
+            const drumKit = {
+                kick: new Tone.MembraneSynth().connect(masterLimiter),
+                snare: new Tone.NoiseSynth({
+                    noise: { type: 'white' },
+                    envelope: { attack: 0.001, decay: 0.2, sustain: 0 }
+                }).connect(masterLimiter),
+                hat: new Tone.MetalSynth({
+                    envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
+                    harmonicity: 5.1,
+                    modulationIndex: 32,
+                    resonance: 4000,
+                    octaves: 1.5
+                }).connect(masterLimiter),
+                tom: new Tone.MembraneSynth({
+                    pitchDecay: 0.05,
+                    octaves: 2
+                }).connect(masterLimiter)
+            };
+        }
+        
+        function initSynth() {
+            polySynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: {
+                    type: 'sawtooth'
+                },
+                envelope: {
+                    attack: 0.1,
+                    decay: 0.2,
+                    sustain: 0.5,
+                    release: 1
+                }
+            }).connect(masterLimiter);
+        }
+        
+        function initPiano() {
+            // Piano uses same polySynth
+        }
+        
+        // ==================== UI INITIALIZATION ====================
+        function initTimeline() {
+            const container = document.getElementById('timelineTracks');
+            container.innerHTML = '';
+            
+            tracks.forEach((track, i) => {
+                const trackEl = document.createElement('div');
+                trackEl.className = 'track-lane';
+                trackEl.innerHTML = `
+                    <div class="track-header">
+                        <div class="track-name">${track.name}</div>
+                        <div class="track-controls">
+                            <button class="btn-track mute ${track.mute ? 'active' : ''}" onclick="toggleMute(${i})">M</button>
+                            <button class="btn-track solo ${track.solo ? 'active' : ''}" onclick="toggleSolo(${i})">S</button>
+                            <button class="btn-track rec-arm ${track.recArm ? 'active' : ''}" onclick="toggleRecArm(${i})">R</button>
+                        </div>
+                    </div>
+                    <div class="track-content" onclick="selectTrack(${i})">
+                        <div class="clip" style="left: 10%; width: 30%;">
+                            Clip ${i+1}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(trackEl);
+            });
+        }
+        
+        function initMixer() {
+            const container = document.getElementById('mixerContainer');
+            container.innerHTML = '';
+            
+            tracks.forEach((track, i) => {
+                const strip = document.createElement('div');
+                strip.className = 'channel-strip';
+                strip.innerHTML = `
+                    <div class="channel-label">${track.name}</div>
+                    <div class="vu-meter">
+                        <div class="vu-fill" id="vu-${i}" style="height: 0%;"></div>
+                    </div>
+                    <div class="pan-knob">
+                        <div class="knob" ontouchstart="startKnob(event, 'pan', ${i})" onmousedown="startKnob(event, 'pan', ${i})"></div>
+                    </div>
+                    <div class="fader-container">
+                        <div class="fader" ontouchstart="startFader(event, ${i})" onmousedown="startFader(event, ${i})">
+                            <div class="fader-track"></div>
+                            <div class="fader-handle" id="fader-${i}" style="top: 50%;"></div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn-track mute ${track.mute ? 'active' : ''}" onclick="toggleMute(${i})" style="width: 24px; height: 24px; font-size: 8px;">M</button>
+                        <button class="btn-track solo ${track.solo ? 'active' : ''}" onclick="toggleSolo(${i})" style="width: 24px; height: 24px; font-size: 8px;">S</button>
+                    </div>
+                `;
+                container.appendChild(strip);
+            });
+            
+            // Add master channel
+            const masterStrip = document.createElement('div');
+            masterStrip.className = 'channel-strip master';
+            masterStrip.innerHTML = `
+                <div class="channel-label">MASTER</div>
+                <div class="vu-meter">
+                    <div class="vu-fill" id="vu-master" style="height: 0%;"></div>
+                </div>
+                <div class="fader-container">
+                    <div class="fader" ontouchstart="startFader(event, 'master')" onmousedown="startFader(event, 'master')">
+                        <div class="fader-track"></div>
+                        <div class="fader-handle" id="fader-master" style="top: 20%;"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(masterStrip);
+        }
+        
+        function initFxPanel() {
+            const selector = document.getElementById('fxTrackSelector');
+            selector.innerHTML = '';
+            
+            tracks.forEach((track, i) => {
+                const btn = document.createElement('button');
+                btn.className = `fx-track-btn ${i === 0 ? 'active' : ''}`;
+                btn.textContent = track.name;
+                btn.onclick = () => selectFxTrack(i);
+                selector.appendChild(btn);
+            });
+        }
+        
+        // ==================== CONTROLS ====================
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            
+            if (isPlaying) {
+                Tone.Transport.start();
+                btn.classList.add('active');
+                btn.innerHTML = '⏸';
+                animatePlayhead();
+            } else {
+                Tone.Transport.pause();
+                btn.classList.remove('active');
+                btn.innerHTML = '▶';
+            }
+        }
+        
+        function stop() {
+            isPlaying = false;
+            Tone.Transport.stop();
+            document.getElementById('playBtn').classList.remove('active');
+            document.getElementById('playBtn').innerHTML = '▶';
+            document.getElementById('playhead').style.left = '0%';
+        }
+        
+        function toggleRec() {
+            isRecording = !isRecording;
+            const btn = document.getElementById('recBtn');
+            btn.classList.toggle('active');
+        }
+        
+        function tapTempo() {
+            // Simple tap tempo implementation
+            const now = Date.now();
+            if (!window.lastTap) window.lastTap = now;
+            const diff = now - window.lastTap;
+            if (diff < 2000) {
+                const bpm = Math.round(60000 / diff);
+                if (bpm >= 60 && bpm <= 200) {
+                    currentBPM = bpm;
+                    Tone.Transport.bpm.value = currentBPM;
+                    document.querySelector('.bpm-display').textContent = bpm;
+                }
+            }
+            window.lastTap = now;
+        }
+        
+        function animatePlayhead() {
+            if (!isPlaying) return;
+            
+            const position = Tone.Transport.progress * 100;
+            document.getElementById('playhead').style.left = position + '%';
+            
+            const bars = Math.floor(Tone.Transport.position.split(':')[0]);
+            const quarters = Math.floor(Tone.Transport.position.split(':')[1]);
+            const sixteenths = Math.floor(Tone.Transport.position.split(':')[2]);
+            document.getElementById('timeDisplay').textContent = 
+                `${bars.toString().padStart(2, '0')}:${quarters.toString().padStart(2, '0')}`;
+            
+            requestAnimationFrame(animatePlayhead);
+        }
+        
+        // ==================== TRACK CONTROLS ====================
+        function toggleMute(index) {
+            tracks[index].mute = !tracks[index].mute;
+            tracks[index].channel.mute = tracks[index].mute;
+            initTimeline();
+            initMixer();
+        }
+        
+        function toggleSolo(index) {
+            tracks[index].solo = !tracks[index].solo;
+            // Simple solo logic: mute others
+            tracks.forEach((t, i) => {
+                if (i !== index) {
+                    t.channel.mute = tracks[index].solo;
+                }
+            });
+            initTimeline();
+            initMixer();
+        }
+        
+        function toggleRecArm(index) {
+            tracks[index].recArm = !tracks[index].recArm;
+            initTimeline();
+            initMixer();
+        }
+        
+        function selectTrack(index) {
+            selectedTrack = index;
+            // Visual feedback
+            document.querySelectorAll('.track-lane').forEach((el, i) => {
+                el.style.background = i === index ? '#1a1a1a' : '#0a0a0a';
+            });
+        }
+        
+        function selectFxTrack(index) {
+            selectedTrack = index;
+            document.querySelectorAll('.fx-track-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+        }
+        
+        // ==================== KNOB & FADER CONTROL ====================
+        let activeControl = null;
+        let startY = 0;
+        let startValue = 0;
+        
+        function startKnob(e, type, trackIndex = null) {
+            e.preventDefault();
+            activeControl = { type, trackIndex, kind: 'knob' };
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            document.addEventListener('touchend', stopControl);
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('mouseup', stopControl);
+        }
+        
+        function startFader(e, index) {
+            e.preventDefault();
+            activeControl = { index, kind: 'fader' };
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            document.addEventListener('touchend', stopControl);
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('mouseup', stopControl);
+        }
+        
+        function handleMove(e) {
+            if (!activeControl) return;
+            e.preventDefault();
+            
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const delta = startY - clientY;
+            
+            if (activeControl.kind === 'fader') {
+                const fader = document.getElementById(`fader-${activeControl.index}`);
+                if (fader) {
+                    const rect = fader.parentElement.getBoundingClientRect();
+                    let percent = ((rect.bottom - clientY) / rect.height) * 100;
+                    percent = Math.max(0, Math.min(90, percent));
+                    fader.style.top = (100 - percent) + '%';
+                    
+                    // Update volume
+                    if (activeControl.index !== 'master') {
+                        const db = percent > 0 ? 20 * Math.log10(percent / 100) : -Infinity;
+                        tracks[activeControl.index].channel.volume.value = db;
+                    } else {
+                        Tone.Destination.volume.value = 20 * Math.log10(percent / 100);
+                    }
+                }
+            } else if (activeControl.kind === 'knob') {
+                // Update knob rotation
+                const knobs = document.querySelectorAll('.knob');
+                knobs.forEach(knob => {
+                    if (knob.matches(':active') || knob.matches(':hover')) {
+                        const rotation = (delta / 2) % 360;
+                        knob.style.transform = `rotate(${rotation}deg)`;
+                    }
+                });
+            }
+        }
+        
+        function stopControl() {
+            activeControl = null;
+            document.removeEventListener('touchmove', handleMove);
+            document.removeEventListener('touchend', stopControl);
+            document.removeEventListener('mousemove', handleMove);
+            document.removeEventListener('mouseup', stopControl);
+        }
+        
+        // ==================== FX SYSTEM ====================
+        function toggleBypass(el) {
+            el.classList.toggle('active');
+        }
+        
+        function changeEffect(slotIndex, effectType) {
+            const paramsContainer = document.getElementById(`fx-params-${slotIndex}`);
+            paramsContainer.innerHTML = '';
+            
+            if (!effectType) return;
+            
+            const params = getEffectParams(effectType);
+            params.forEach(param => {
+                const paramEl = document.createElement('div');
+                paramEl.className = 'fx-param';
+                paramEl.innerHTML = `
+                    <div class="knob-container">
+                        <div class="knob" ontouchstart="startKnob(event, '${param.id}')" 
+                             onmousedown="startKnob(event, '${param.id}')"></div>
+                    </div>
+                    <div class="fx-param-label">${param.name}</div>
+                `;
+                paramsContainer.appendChild(paramEl);
+            });
+            
+            // Create actual effect in Tone.js
+            createEffect(slotIndex, effectType);
+        }
+        
+        function getEffectParams(effectType) {
+            const paramMap = {
+                'compressor': [
+                    { id: 'threshold', name: 'Threshold' },
+                    { id: 'ratio', name: 'Ratio' },
+                    { id: 'attack', name: 'Attack' },
+                    { id: 'release', name: 'Release' }
+                ],
+                'reverb': [
+                    { id: 'size', name: 'Size' },
+                    { id: 'decay', name: 'Decay' },
+                    { id: 'damp', name: 'Damping' },
+                    { id: 'mix', name: 'Mix' }
+                ],
+                'delay': [
+                    { id: 'time', name: 'Time' },
+                    { id: 'feedback', name: 'Feedback' },
+                    { id: 'mix', name: 'Mix' }
+                ],
+                'autotune': [
+                    { id: 'retune', name: 'Retune' },
+                    { id: 'humanize', name: 'Humanize' },
+                    { id: 'scale', name: 'Scale' }
+                ],
+                'pitchshift': [
+                    { id: 'pitch', name: 'Pitch' },
+                    { id: 'fine', name: 'Fine' }
+                ],
+                'vocoder': [
+                    { id: 'bands', name: 'Bands' },
+                    { id: 'mod', name: 'Modulation' }
+                ],
+                'default': [
+                    { id: 'amount', name: 'Amount' },
+                    { id: 'mix', name: 'Mix' }
+                ]
+            };
+            
+            return paramMap[effectType] || paramMap['default'];
+        }
+        
+        function createEffect(trackIndex, slotIndex, type) {
+            let effect;
+            
+            switch(type) {
+                case 'compressor':
+                    effect = new Tone.Compressor();
+                    break;
+                case 'reverb':
+                    effect = new Tone.Reverb();
+                    break;
+                case 'delay':
+                    effect = new Tone.FeedbackDelay();
+                    break;
+                case 'autotune':
+                    // Simulated with pitch correction
+                    effect = new Tone.PitchShift();
+                    break;
+                case 'pitchshift':
+                    effect = new Tone.PitchShift();
+                    break;
+                case 'vocoder':
+                    // Complex vocoder using multiple bands
+                    effect = new Tone.Phaser();
+                    break;
+                default:
+                    effect = new Tone.Gain();
+            }
+            
+            // Connect to track
+            if (tracks[trackIndex]) {
+                effect.connect(tracks[trackIndex].channel);
+                tracks[trackIndex].effects[slotIndex] = effect;
+            }
+        }
+        
+        // ==================== INSTRUMENTS ====================
+        function showInstrument(inst) {
+            document.querySelectorAll('.instrument-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.instrument-panel').forEach(p => p.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`inst-${inst}`).classList.add('active');
+            
+            if (inst === 'drums' && !document.getElementById('drumGrid').children.length) {
+                createDrumPads();
+            } else if (inst === 'piano' && !document.getElementById('pianoKeys').children.length) {
+                createPianoKeys();
+            }
+        }
+        
+        function createDrumPads() {
+            const grid = document.getElementById('drumGrid');
+            const pads = [
+                { name: 'KICK', note: 'C1', color: '#ff4444' },
+                { name: 'SNARE', note: 'D1', color: '#ff8844' },
+                { name: 'CLAP', note: 'E1', color: '#ffaa44' },
+                { name: 'HAT', note: 'F1', color: '#44ff88' },
+                { name: 'OPEN', note: 'G1', color: '#44ffaa' },
+                { name: 'TOM', note: 'A1', color: '#4488ff' },
+                { name: 'CRASH', note: 'B1', color: '#8844ff' },
+                { name: 'PERC', note: 'C2', color: '#ff44ff' },
+                { name: 'FX1', note: 'D2', color: '#ff4488' },
+                { name: 'FX2', note: 'E2', color: '#ffffff' },
+                { name: 'FX3', note: 'F2', color: '#aaaaaa' },
+                { name: 'SHAKER', note: 'G2', color: '#ffff44' }
+            ];
+            
+            pads.forEach(pad => {
+                const div = document.createElement('div');
+                div.className = 'drum-pad';
+                div.innerHTML = `
+                    <div class="pad-label">${pad.name}</div>
+                `;
+                div.onmousedown = () => playDrum(pad.note, div);
+                div.ontouchstart = (e) => { e.preventDefault(); playDrum(pad.note, div); };
+                grid.appendChild(div);
+            });
+        }
+        
+        function playDrum(note, element) {
+            if (element) {
+                element.classList.add('active');
+                setTimeout(() => element.classList.remove('active'), 100);
+            }
+            
+            if (drumSynth) {
+                drumSynth.triggerAttackRelease(note, '8n');
+            }
+        }
+        
+        function createPianoKeys() {
+            const container = document.getElementById('pianoKeys');
+            const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            
+            for (let oct = 3; oct <= 4; oct++) {
+                notes.forEach((note, i) => {
+                    const isBlack = note.includes('#');
+                    const key = document.createElement('div');
+                    key.className = isBlack ? 'black-key' : 'white-key';
+                    key.dataset.note = note + oct;
+                    
+                    if (isBlack) {
+                        const prevWhite = container.lastElementChild;
+                        if (prevWhite) {
+                            const offset = (container.children.length - (oct - 3) * 7) * 50 - 15;
+                            key.style.left = offset + 'px';
+                        }
+                    }
+                    
+                    const playNote = () => {
+                        key.classList.add('active');
+                        if (polySynth) {
+                            polySynth.triggerAttackRelease(note + oct, '8n');
+                        }
+                        setTimeout(() => key.classList.remove('active'), 200);
+                    };
+                    
+                    key.onmousedown = playNote;
+                    key.ontouchstart = (e) => { e.preventDefault(); playNote(); };
+                    
+                    container.appendChild(key);
+                });
+            }
+        }
+        
+                function shiftOctave(delta) {
+            currentOctave += delta;
+            if (currentOctave < 1) currentOctave = 1;
+            if (currentOctave > 6) currentOctave = 6;
+            document.getElementById('octaveDisplay').textContent = `C${currentOctave}-C${currentOctave + 2}`;
+            createPianoKeys();
+        }
+
+        function setWaveform(oscIndex, type) {
+            if (polySynth) {
+                polySynth.set({ oscillator: { type: type } });
+            }
+            // Update UI
+            event.target.parentElement.querySelectorAll('.waveform-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // ==================== VISUALIZER ====================
+        function drawVisualizer() {
+            const canvas = document.getElementById('masterVisualizer');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerY = height / 2;
+            
+            function draw() {
+                requestAnimationFrame(draw);
+                
+                ctx.fillStyle = '#050505';
+                ctx.fillRect(0, 0, width, height);
+                
+                if (!analyser) return;
+                
+                const values = analyser.getValue();
+                ctx.beginPath();
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 2;
+                
+                for (let i = 0; i < values.length; i++) {
+                    const amplitude = values[i] * height / 2;
+                    const x = (i / values.length) * width;
+                    const y = centerY + amplitude;
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                
+                ctx.stroke();
+                
+                // Draw circular mask
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(width/2, height/2, Math.min(width, height)/2 - 5, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            draw();
+            
+            // Update VU meters
+            updateVUMeters();
+        }
+
+        function updateVUMeters() {
+            tracks.forEach((track, i) => {
+                const vu = document.getElementById(`vu-${i}`);
+                if (vu && track.channel) {
+                    const level = Math.random() * 60; // Simulated for now
+                    vu.style.height = level + '%';
+                }
+            });
+            
+            const masterVu = document.getElementById('vu-master');
+            if (masterVu) {
+                const level = Math.random() * 70;
+                masterVu.style.height = level + '%';
+            }
+            
+            setTimeout(updateVUMeters, 50);
+        }
+
+        // ==================== NAVIGATION ====================
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById(`screen-${screenName}`).classList.add('active');
+            event.target.classList.add('active');
+            
+            currentScreen = screenName;
+        }
+
+        // ==================== EXPORT & SAVE ====================
+        function exportProject(format) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-title">Export ${format.toUpperCase()}</div>
+                    <p style="color: var(--text-secondary); text-align: center; margin-bottom: 20px;">
+                        Exportando mezcla estéreo...
+                    </p>
+                    <div style="width: 100%; height: 4px; background: var(--bg-control); border-radius: 2px; overflow: hidden;">
+                        <div style="width: 0%; height: 100%; background: var(--accent-play); transition: width 2s;" id="exportProgress"></div>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="btn-modal" onclick="this.closest('.modal').remove()">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            setTimeout(() => {
+                document.getElementById('exportProgress').style.width = '100%';
+            }, 100);
+            
+            setTimeout(() => {
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-title">¡Exportado!</div>
+                        <p style="color: var(--accent-play); text-align: center;">
+                            Archivo guardado en Downloads
+                        </p>
+                        <div class="modal-buttons">
+                            <button class="btn-modal primary" onclick="this.closest('.modal').remove()">OK</button>
+                        </div>
+                    </div>
+                `;
+            }, 2500);
+        }
+
+        function exportStems() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-title">Export Stems</div>
+                    <p style="color: var(--text-secondary); text-align: center; margin-bottom: 20px;">
+                        Exportando 8 pistas separadas...
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 8px;" id="stemsList">
+                        ${tracks.map((t, i) => `
+                            <div style="display: flex; align-items: center; gap: 10px; font-size: 12px;">
+                                <span style="color: var(--text-secondary);">Track ${i+1}</span>
+                                <div style="flex: 1; height: 4px; background: var(--bg-control); border-radius: 2px;">
+                                    <div style="width: 0%; height: 100%; background: var(--accent-play); transition: width 1s ${i * 0.2}s;" class="stem-progress"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="modal-buttons" style="margin-top: 20px;">
+                        <button class="btn-modal" onclick="this.closest('.modal').remove()">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            setTimeout(() => {
+                document.querySelectorAll('.stem-progress').forEach(el => {
+                    el.style.width = '100%';
+                });
+            }, 100);
+        }
+
+        function saveProject() {
+            const projectData = {
+                tracks: tracks.map(t => ({
+                    name: t.name,
+                    volume: t.volume,
+                    pan: t.pan,
+                    mute: t.mute,
+                    solo: t.solo
+                })),
+                bpm: currentBPM,
+                version: '1.0'
+            };
+            
+            const blob = new Blob([JSON.stringify(projectData)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'noir-project.noir';
+            a.click();
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-title">Proyecto Guardado</div>
+                    <p style="color: var(--accent-play); text-align: center;">
+                        noir-project.noir
+                    </p>
+                    <div class="modal-buttons">
+                        <button class="btn-modal primary" onclick="this.closest('.modal').remove()">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // ==================== SWIPE NAVIGATION ====================
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+        
+        function handleSwipe() {
+            const screens = ['arrange', 'mixer', 'fx', 'instruments', 'master'];
+            const currentIndex = screens.indexOf(currentScreen);
+            const swipeThreshold = 50;
+            
+            if (touchEndX < touchStartX - swipeThreshold && currentIndex < screens.length - 1) {
+                // Swipe left - next screen
+                showScreenByIndex(currentIndex + 1);
+            }
+            if (touchEndX > touchStartX + swipeThreshold && currentIndex > 0) {
+                // Swipe right - previous screen
+                showScreenByIndex(currentIndex - 1);
+            }
+        }
+        
+        function showScreenByIndex(index) {
+            const screens = ['arrange', 'mixer', 'fx', 'instruments', 'master'];
+            const screenName = screens[index];
+            
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById(`screen-${screenName}`).classList.add('active');
+            document.querySelectorAll('.nav-tab')[index].classList.add('active');
+            
+            currentScreen = screenName;
+        }
+
+        // ==================== KEYBOARD SHORTCUTS ====================
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                toggleRec();
+            }
+        });
+
+        // ==================== INITIALIZATION ====================
+        window.addEventListener('load', () => {
+            // Pre-load any assets
+            console.log('NOIR STUDIO PRO v1.0 Loaded');
+        });
+
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', e => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Prevent context menu
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+</html>
+
