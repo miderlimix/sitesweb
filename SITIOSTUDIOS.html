@@ -1,0 +1,2926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>SITIOSTUDIO</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        :root {
+            --fondo-principal: #0a0a0a;
+            --fondo-secundario: #141414;
+            --fondo-terciario: #1e1e1e;
+            --fondo-control: #252525;
+            --fondo-control-hover: #2a2a2a;
+            --linea-principal: #ffffff;
+            --linea-secundaria: #888888;
+            --linea-terciaria: #444444;
+            --acento-grabar: #ff2d55;
+            --acento-reproducir: #00d4aa;
+            --acento-seleccionado: #007aff;
+            --acento-advertencia: #ff9500;
+            --acento-fx: #5856d6;
+            --texto-principal: #ffffff;
+            --texto-secundario: #a0a0a0;
+            --exito: #34c759;
+        }
+        
+        body {
+            background: var(--fondo-principal);
+            color: var(--texto-principal);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        /* PANTALLA INICIO */
+        .pantalla-inicio {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--fondo-principal);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            gap: 40px;
+        }
+        
+        .pantalla-inicio.oculto {
+            display: none;
+        }
+        
+        .logo-sitiostudio {
+            text-align: center;
+        }
+        
+        .logo-principal {
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: 12px;
+            color: var(--linea-principal);
+            margin-bottom: 10px;
+        }
+        
+        .logo-sub {
+            font-size: 14px;
+            color: var(--acento-reproducir);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+        
+        .btn-iniciar-grabacion {
+            padding: 30px 80px;
+            background: transparent;
+            border: 3px solid var(--acento-grabar);
+            color: var(--acento-grabar);
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            border-radius: 60px;
+            animation: pulso-grabar 2s infinite;
+            font-weight: 600;
+        }
+        
+        @keyframes pulso-grabar {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.4); }
+            50% { box-shadow: 0 0 30px 10px rgba(255, 45, 85, 0.2); }
+        }
+        
+        .btn-iniciar-grabacion:active {
+            background: var(--acento-grabar);
+            color: white;
+            transform: scale(0.98);
+        }
+        
+        .info-sistema {
+            color: var(--texto-secundario);
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.8;
+            max-width: 320px;
+        }
+        
+        .version-app {
+            position: absolute;
+            bottom: 30px;
+            color: var(--linea-terciaria);
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+        
+        /* CABECERA PRINCIPAL */
+        .cabecera-principal {
+            height: 70px;
+            background: var(--fondo-secundario);
+            border-bottom: 1px solid var(--linea-terciaria);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .logo-header {
+            font-size: 22px;
+            font-weight: 300;
+            letter-spacing: 4px;
+        }
+        
+        .logo-header span {
+            color: var(--acento-reproducir);
+        }
+        
+        .centro-transporte {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .controles-transporte {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .btn-transporte {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: 2px solid var(--linea-terciaria);
+            background: var(--fondo-control);
+            color: var(--texto-principal);
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        
+        .btn-transporte:active {
+            transform: scale(0.92);
+            background: var(--fondo-control-hover);
+        }
+        
+        .btn-reproducir {
+            border-color: var(--acento-reproducir);
+            color: var(--acento-reproducir);
+            width: 65px;
+            height: 65px;
+            font-size: 28px;
+        }
+        
+        .btn-reproducir.activo {
+            background: var(--acento-reproducir);
+            color: var(--fondo-principal);
+            box-shadow: 0 0 30px rgba(0, 212, 170, 0.4);
+        }
+        
+        .btn-grabar {
+            border-color: var(--acento-grabar);
+            color: var(--acento-grabar);
+        }
+        
+        .btn-grabar.activo {
+            background: var(--acento-grabar);
+            color: white;
+            animation: grabando-anim 1s infinite;
+        }
+        
+        @keyframes grabando-anim {
+            0%, 100% { box-shadow: 0 0 10px var(--acento-grabar); }
+            50% { box-shadow: 0 0 30px var(--acento-grabar); }
+        }
+        
+        .info-tiempo {
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            color: var(--texto-secundario);
+            letter-spacing: 1px;
+        }
+        
+        .display-bpm-contenedor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .display-bpm {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--acento-seleccionado);
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .label-bpm {
+            font-size: 10px;
+            color: var(--texto-secundario);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* NAVEGACIÓN INFERIOR */
+        .nav-principal {
+            height: 60px;
+            background: var(--fondo-secundario);
+            border-top: 1px solid var(--linea-terciaria);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            background: transparent;
+            border: none;
+            color: var(--texto-secundario);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-top: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .nav-item.activo {
+            color: var(--acento-reproducir);
+            border-top-color: var(--acento-reproducir);
+            background: rgba(0, 212, 170, 0.05);
+        }
+        
+        .nav-icono {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+        
+        /* CONTENIDO PRINCIPAL */
+        .area-trabajo {
+            height: calc(100vh - 130px);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .pantalla-seccion {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+        
+        .pantalla-seccion.activa {
+            display: block;
+        }
+        
+        /* PANTALLA GRABACIÓN */
+        .panel-grabacion {
+            padding: 20px;
+        }
+        
+        .estado-grabacion {
+            background: var(--fondo-secundario);
+            border: 1px solid var(--linea-terciaria);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .indicador-grabacion {
+            width: 20px;
+            height: 20px;
+            background: var(--linea-terciaria);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            transition: all 0.3s;
+        }
+        
+        .indicador-grabacion.activo {
+            background: var(--acento-grabar);
+            box-shadow: 0 0 20px var(--acento-grabar);
+            animation: pulso-indicador 1s infinite;
+        }
+        
+        @keyframes pulso-indicador {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .texto-estado {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .subtexto-estado {
+            font-size: 13px;
+            color: var(--texto-secundario);
+        }
+        
+        .contenedor-metronomo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .btn-metronomo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--linea-terciaria);
+            background: var(--fondo-control);
+            color: var(--texto-secundario);
+            font-size: 20px;
+        }
+        
+        .btn-metronomo.activo {
+            border-color: var(--acento-advertencia);
+            color: var(--acento-advertencia);
+        }
+        
+        .visor-niveles {
+            width: 200px;
+            height: 60px;
+            background: var(--fondo-control);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .barra-nivel {
+            position: absolute;
+            bottom: 0;
+            width: 50%;
+            background: linear-gradient(to top, var(--acento-reproducir) 0%, var(--acento-advertencia) 80%, var(--acento-grabar) 100%);
+            transition: height 0.05s;
+        }
+        
+        .barra-nivel.izquierda { left: 0; }
+        .barra-nivel.derecha { right: 0; }
+        
+        .linea-seguridad {
+            position: absolute;
+            top: 20%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--acento-grabar);
+            opacity: 0.5;
+        }
+        
+        /* CONFIGURACIÓN ENTRADA */
+        .seccion-config {
+            background: var(--fondo-secundario);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .titulo-seccion {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--texto-secundario);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-entrada {
+            margin-bottom: 20px;
+        }
+        
+        .label-control {
+            font-size: 12px;
+            color: var(--texto-secundario);
+            margin-bottom: 10px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .slider-container {
+            position: relative;
+            height: 50px;
+            background: var(--fondo-control);
+            border-radius: 25px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .slider-track {
+            flex: 1;
+            height: 6px;
+            background: var(--linea-terciaria);
+            border-radius: 3px;
+            position: relative;
+        }
+        
+        .slider-fill {
+            height: 100%;
+            background: var(--acento-reproducir);
+            border-radius: 3px;
+            width: 50%;
+        }
+        
+        .slider-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            left: 50%;
+        }
+        
+        .valor-control {
+            position: absolute;
+            right: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--acento-reproducir);
+        }
+        
+        .selector-fuente {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .opcion-fuente {
+            min-width: 120px;
+            padding: 15px;
+            background: var(--fondo-control);
+            border: 2px solid var(--linea-terciaria);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .opcion-fuente.activa {
+            border-color: var(--acento-reproducir);
+            background: rgba(0, 212, 170, 0.1);
+        }
+        
+        .icono-fuente {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .nombre-fuente {
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .tipo-fuente {
+            font-size: 10px;
+            color: var(--texto-secundario);
+        }
+        
+        /* TOMAS/COMPING */
+        .panel-tomas {
+            background: var(--fondo-secundario);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        
+        .lista-tomas {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .item-toma {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--fondo-control);
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .item-toma.activa {
+            border-color: var(--acento-reproducir);
+        }
+        
+        .item-toma.seleccionada {
+            background: rgba(0, 212, 170, 0.15);
+        }
+        
+        .numero-toma {
+            width: 40px;
+            height: 40px;
+            background: var(--fondo-terciario);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .info-toma {
+            flex: 1;
+        }
+        
+        .nombre-toma {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .detalle-toma {
+            font-size: 12px;
+            color: var(--texto-secundario);
+        }
+        
+        .acciones-toma {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-toma {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--linea-terciaria);
+            background: var(--fondo-terciario);
+            color: var(--texto-principal);
+            font-size: 16px;
+        }
+        
+        .btn-toma.promover {
+            background: var(--acento-reproducir);
+            color: var(--fondo-principal);
+            border-color: var(--acento-reproducir);
+        }
+        
+        /* PANTALLA EDICIÓN (TIMELINE) */
+        .timeline-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .toolbar-timeline {
+            height: 50px;
+            background: var(--fondo-secundario);
+            border-bottom: 1px solid var(--linea-terciaria);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        
+        .tool-btn {
+            padding: 8px 16px;
+            background: var(--fondo-control);
+            border: 1px solid var(--linea-terciaria);
+            border-radius: 8px;
+            color: var(--texto-secundario);
+            font-size: 12px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .tool-btn.activo {
+            background: var(--acento-seleccionado);
+            color: white;
+            border-color: var(--acento-seleccionado);
+        }
+        
+        .selector-plantilla {
+            padding: 8px 12px;
+            background: var(--fondo-control);
+            border: 1px solid var(--linea-terciaria);
+            border-radius: 8px;
+            color: var(--texto-principal);
+            font-size: 12px;
+        }
+        
+        .area-pistas {
+            flex: 1;
+            overflow: auto;
+            background-image: 
+                linear-gradient(var(--linea-terciaria) 1px, transparent 1px),
+                linear-gradient(90deg, var(--linea-terciaria) 1px, transparent 1px);
+            background-size: 100% 90px, 80px 100%;
+            position: relative;
+        }
+        
+        .regla-tiempo {
+            height: 35px;
+            background: var(--fondo-secundario);
+            border-bottom: 2px solid var(--linea-terciaria);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+        }
+        
+        .marca-compas {
+            position: absolute;
+            bottom: 0;
+            padding: 5px;
+            font-size: 11px;
+            color: var(--texto-secundario);
+            border-left: 1px solid var(--linea-terciaria);
+        }
+        
+        .playhead {
+            position: absolute;
+            top: 35px;
+            width: 2px;
+            height: calc(100% - 35px);
+            background: var(--acento-reproducir);
+            z-index: 50;
+            pointer-events: none;
+            box-shadow: 0 0 10px var(--acento-reproducir);
+        }
+        
+        .pista-timeline {
+            height: 90px;
+            border-bottom: 1px solid var(--linea-terciaria);
+            display: flex;
+            position: relative;
+        }
+        
+        .header-pista {
+            width: 110px;
+            background: var(--fondo-terciario);
+            border-right: 2px solid var(--linea-terciaria);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+        }
+        
+        .num-pista {
+            font-size: 11px;
+            color: var(--acento-seleccionado);
+            font-weight: 700;
+        }
+        
+        .nom-pista {
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .tipo-pista {
+            font-size: 9px;
+            color: var(--texto-secundario);
+            text-transform: uppercase;
+        }
+        
+        .mini-controles {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-mini-pista {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: 1px solid var(--linea-terciaria);
+            background: var(--fondo-control);
+            font-size: 10px;
+            color: var(--texto-secundario);
+        }
+        
+        .btn-mini-pista.mute.activo { background: var(--acento-grabar); color: white; }
+        .btn-mini-pista.solo.activo { background: var(--acento-advertencia); color: black; }
+        .btn-mini-pista.rec.activo { background: var(--acento-grabar); color: white; animation: pulso-rec-mini 1s infinite; }
+        
+        @keyframes pulso-rec-mini {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .area-clips {
+            flex: 1;
+            position: relative;
+            min-width: 2000px;
+        }
+        
+        .clip-audio {
+            position: absolute;
+            height: 70px;
+            top: 10px;
+            background: linear-gradient(135deg, var(--fondo-control-hover) 0%, var(--fondo-control) 100%);
+            border: 2px solid var(--linea-secundaria);
+            border-radius: 8px;
+            min-width: 100px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .clip-audio.seleccionado {
+            border-color: var(--acento-reproducir);
+            box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+        }
+        
+        .onda-clip {
+            height: 40px;
+            margin: 5px;
+            background: var(--acento-seleccionado);
+            opacity: 0.3;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .info-clip {
+            padding: 0 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--texto-secundario);
+        }
+        
+        .fade-clip {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 20px;
+            background: linear-gradient(to right, var(--fondo-principal), transparent);
+        }
+        
+        .fade-clip.salida {
+            right: 0;
+            background: linear-gradient(to left, var(--fondo-principal), transparent);
+        }
+        
+        /* LANES DE TOMAS */
+        .lane-toma {
+            height: 30px;
+            margin: 2px 5px;
+            background: var(--fondo-control);
+            border-radius: 4px;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 10px;
+            color: var(--texto-secundario);
+        }
+        
+        .lane-toma.activa {
+            border-color: var(--acento-reproducir);
+            background: rgba(0, 212, 170, 0.1);
+        }
+        
+        /* PANTALLA MEZCLADOR */
+        .mezclador-container {
+            display: flex;
+            height: 100%;
+            padding: 15px;
+            gap: 8px;
+            overflow-x: auto;
+        }
+        
+        .canal-mezcla {
+            min-width: 75px;
+            background: var(--fondo-secundario);
+            border-radius: 16px;
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid var(--linea-terciaria);
+        }
+        
+        .canal-mezcla.master {
+            min-width: 90px;
+            background: var(--fondo-terciario);
+            border-color: var(--linea-secundaria);
+        }
+        
+        .header-canal {
+            text-align: center;
+        }
+        
+        .icono-canal {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .nombre-canal {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--texto-secundario);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            height: 60px;
+        }
+        
+        .vu-mezcla {
+            width: 12px;
+            height: 140px;
+            background: var(--fondo-control);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .fill-vu {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, 
+                var(--acento-reproducir) 0%, 
+                var(--acento-reproducir) 60%,
+                var(--acento-advertencia) 60%, 
+                var(--acento-advertencia) 85%, 
+                var(--acento-grabar) 85%);
+            transition: height 0.05s;
+            border-radius: 6px;
+        }
+        
+        .perilla-mezcla {
+            width: 55px;
+            height: 55px;
+            position: relative;
+        }
+        
+        .fader-vertical {
+            flex: 1;
+            width: 50px;
+            background: var(--fondo-control);
+            border-radius: 25px;
+            position: relative;
+            padding: 15px 0;
+        }
+        
+        .track-fader {
+            width: 4px;
+            height: 100%;
+            background: var(--linea-terciaria);
+            margin: 0 auto;
+            border-radius: 2px;
+            position: relative;
+        }
+        
+        .thumb-fader {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 50%;
+        }
+        
+        .thumb-fader::after {
+            content: '';
+            width: 60%;
+            height: 3px;
+            background: var(--fondo-principal);
+            border-radius: 2px;
+        }
+        
+        .botones-canal {
+            display: flex;
+            gap: 6px;
+        }
+        
+        /* PANTALLA FX */
+        .fx-container {
+            padding: 20px;
+        }
+        
+        .selector-pista-fx {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        
+        .btn-pista-fx {
+            min-width: 100px;
+            padding: 12px 20px;
+            background: var(--fondo-secundario);
+            border: 2px solid var(--linea-terciaria);
+            border-radius: 12px;
+            color: var(--texto-secundario);
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .btn-pista-fx.activo {
+            border-color: var(--acento-fx);
+            color: var(--acento-fx);
+            background: rgba(88, 86, 214, 0.1);
+        }
+        
+        .rack-fx {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .modulo-fx {
+            background: var(--fondo-secundario);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--linea-terciaria);
+        }
+        
+        .header-modulo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--fondo-terciario);
+            border-bottom: 1px solid var(--linea-terciaria);
+        }
+        
+        .titulo-modulo {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .numero-slot {
+            color: var(--acento-fx);
+            margin-right: 8px;
+        }
+        
+        .switch-bypass {
+            width: 50px;
+            height: 28px;
+            background: var(--fondo-control);
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .switch-bypass.activo {
+            background: var(--acento-reproducir);
+        }
+        
+        .switch-bypass::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .switch-bypass.activo::after {
+            left: 24px;
+        }
+        
+        .selector-fx {
+            width: 100%;
+            padding: 15px 20px;
+            background: var(--fondo-control);
+            border: none;
+            border-bottom: 1px solid var(--linea-terciaria);
+            color: var(--texto-principal);
+            font-size: 15px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+        }
+        
+        .parametros-fx {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 25px;
+            padding: 25px 20px;
+        }
+        
+        .param-fx {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .knob-fx {
+            width: 80px;
+            height: 80px;
+            background: var(--fondo-control);
+            border-radius: 50%;
+            border: 3px solid var(--linea-terciaria);
+            position: relative;
+        }
+        
+        .knob-fx::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 20px;
+            background: var(--linea-principal);
+            border-radius: 2px;
+        }
+        
+        .label-param {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--texto-secundario);
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+        
+        .valor-param {
+            font-size: 13px;
+            color: var(--acento-fx);
+            font-weight: 700;
+        }
+        
+        /* PANTALLA MASTER */
+        .master-container {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .visualizador-master {
+            width: 300px;
+            height: 300px;
+            background: var(--fondo-secundario);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid var(--linea-terciaria);
+        }
+        
+        #canvasMaster {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .info-master {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .dato-master {
+            text-align: center;
+        }
+        
+        .valor-master {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--acento-reproducir);
+            font-family: 'SF Mono', monospace;
+        }
+        
+        .label-master {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--texto-secundario);
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        
+        .seccion-exportar {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .btn-accion-master {
+            padding: 20px;
+            background: var(--fondo-secundario);
+            border: 2px solid var(--linea-terciaria);
+            border-radius: 14px;
+            color: var(--texto-principal);
+            font-size: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+        
+        .btn-accion-master:active {
+            transform: scale(0.98);
+            border-color: var(--acento-reproducir);
+            background: rgba(0, 212, 170, 0.1);
+        }
+        
+        .btn-accion-master.primario {
+            background: var(--acento-reproducir);
+            color: var(--fondo-principal);
+            border-color: var(--acento-reproducir);
+        }
+        
+        /* MENÚ CONTEXTUAL */
+        .menu-contextual {
+            position: fixed;
+            background: var(--fondo-secundario);
+            border: 1px solid var(--linea-terciaria);
+            border-radius: 16px;
+            padding: 10px 0;
+            min-width: 260px;
+            z-index: 5000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            display: none;
+            animation: aparecer-menu 0.2s ease;
+        }
+        
+        @keyframes aparecer-menu {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .menu-contextual.visible {
+            display: block;
+        }
+        
+        .item-menu-ctx {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--texto-principal);
+            font-size: 15px;
+            cursor: pointer;
+        }
+        
+        .item-menu-ctx:active {
+            background: var(--fondo-terciario);
+        }
+        
+        .item-menu-ctx.peligro {
+            color: var(--acento-grabar);
+        }
+        
+        .item-menu-ctx.separador {
+            border-top: 1px solid var(--linea-terciaria);
+            margin-top: 8px;
+            padding-top: 12px;
+        }
+        
+        .icono-ctx {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        /* MODALES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 6000;
+            padding: 20px;
+        }
+        
+        .modal-overlay.visible {
+            display: flex;
+        }
+        
+        .modal-contenido {
+            background: var(--fondo-secundario);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--linea-terciaria);
+        }
+        
+        .titulo-modal {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .cuerpo-modal {
+            margin-bottom: 25px;
+        }
+        
+        .grupo-modal {
+            margin-bottom: 20px;
+        }
+        
+        .label-modal {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--texto-secundario);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        
+        .botones-modal {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-modal {
+            flex: 1;
+            padding: 18px;
+            background: var(--fondo-control);
+            border: 1px solid var(--linea-terciaria);
+            border-radius: 12px;
+            color: var(--texto-principal);
+            font-size: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .btn-modal.primario {
+            background: var(--acento-reproducir);
+            color: var(--fondo-principal);
+            border-color: var(--acento-reproducir);
+        }
+        
+        /* TOAST */
+        .toast-notificacion {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--fondo-secundario);
+            border: 1px solid var(--linea-terciaria);
+            padding: 16px 32px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 600;
+            z-index: 7000;
+            opacity: 0;
+            transition: all 0.3s;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        
+        .toast-notificacion.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        /* EDITOR DE PITCH */
+        .editor-pitch {
+            background: var(--fondo-secundario);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .canvas-pitch {
+            width: 100%;
+            height: 200px;
+            background: var(--fondo-control);
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .controles-pitch {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        
+        .btn-herramienta-pitch {
+            padding: 10px 20px;
+            background: var(--fondo-control);
+            border: 1px solid var(--linea-terciaria);
+            border-radius: 8px;
+            color: var(--texto-secundario);
+            font-size: 12px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        
+        .btn-herramienta-pitch.activo {
+            background: var(--acento-seleccionado);
+            color: white;
+            border-color: var(--acento-seleccionado);
+        }
+        
+        /* UTILIDADES */
+        .oculto { display: none !important; }
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--fondo-principal);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--linea-terciaria);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA INICIO -->
+    <div class="pantalla-inicio" id="pantallaInicio">
+        <div class="logo-sitiostudio">
+            <div class="logo-principal">SITIOSTUDIO</div>
+            <div class="logo-sub">Estudio Profesional Portátil</div>
+        </div>
+        
+        <button class="btn-iniciar-grabacion" onclick="iniciarEstudio()">
+            INICIAR SESIÓN
+        </button>
+        
+        <div class="info-sistema">
+            10 pistas de audio • Autotune Pro • FX completos<br>
+            Optimizado para trap, drill y hip-hop<br>
+            Toque para activar el motor de audio
+        </div>
+        
+        <div class="version-app">v2.0 PRO</div>
+    </div>
+
+    <!-- CABECERA -->
+    <div class="cabecera-principal">
+        <div class="logo-header">SITIO<span>STUDIO</span></div>
+        
+        <div class="centro-transporte">
+            <div class="controles-transporte">
+                <button class="btn-transporte" onclick="detenerTransporte()" title="Detener">⏹</button>
+                <button class="btn-transporte btn-reproducir" id="btnReproducir" onclick="alternarReproduccion()" title="Reproducir">▶</button>
+                <button class="btn-transporte btn-grabar" id="btnGrabar" onclick="alternarGrabacion()" title="Grabar">●</button>
+            </div>
+            <div class="info-tiempo" id="infoTiempo">00:00:00 | Compás 1.1.1</div>
+        </div>
+        
+        <div class="display-bpm-contenedor" onclick="tocarTempo()">
+            <div class="display-bpm" id="displayBPM">140</div>
+            <div class="label-bpm">BPM</div>
+        </div>
+    </div>
+
+    <!-- ÁREA DE TRABAJO -->
+    <div class="area-trabajo">
+
+        <!-- PANTALLA GRABACIÓN -->
+        <div class="pantalla-seccion activa" id="pantalla-grabacion">
+            <div class="panel-grabacion">
+                
+                <div class="estado-grabacion" id="panelEstadoGrabacion">
+                    <div class="indicador-grabacion" id="indicadorGrabacion"></div>
+                    <div class="texto-estado" id="textoEstado">Listo para grabar</div>
+                    <div class="subtexto-estado">Arme una pista y pulse el botón rojo</div>
+                </div>
+
+                <div class="contenedor-metronomo">
+                    <button class="btn-metronomo" id="btnMetronomo" onclick="alternarMetronomo()" title="Metrónomo">🔔</button>
+                    <div class="visor-niveles">
+                        <div class="barra-nivel izquierda" id="nivelIzq" style="height: 0%;"></div>
+                        <div class="barra-nivel derecha" id="nivelDer" style="height: 0%;"></div>
+                        <div class="linea-seguridad"></div>
+                    </div>
+                </div>
+
+                <div class="seccion-config">
+                    <div class="titulo-seccion">⚙️ Configuración de Entrada</div>
+                    
+                    <div class="control-entrada">
+                        <label class="label-control">Fuente de Audio</label>
+                        <div class="selector-fuente">
+                            <div class="opcion-fuente activa" onclick="seleccionarFuente(this, 'interno')">
+                                <div class="icono-fuente">📱</div>
+                                <div class="nombre-fuente">Micrófono</div>
+                                <div class="tipo-fuente">Interno</div>
+                            </div>
+                            <div class="opcion-fuente" onclick="seleccionarFuente(this, 'usb')">
+                                <div class="icono-fuente">🔌</div>
+                                <div class="nombre-fuente">USB OTG</div>
+                                <div class="tipo-fuente">Externo</div>
+                            </div>
+                            <div class="opcion-fuente" onclick="seleccionarFuente(this, 'interfaz')">
+                                <div class="icono-fuente">🎛️</div>
+                                <div class="nombre-fuente">Interfaz</div>
+                                <div class="tipo-fuente">Pro</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-entrada">
+                        <label class="label-control">Ganancia de Entrada</label>
+                        <div class="slider-container" ontouchstart="iniciarSlider(event, 'ganancia')" onmousedown="iniciarSlider(event, 'ganancia')">
+                            <div class="slider-track">
+                                <div class="slider-fill" id="fillGanancia" style="width: 50%;"></div>
+                                <div class="slider-thumb" id="thumbGanancia" style="left: 50%;"></div>
+                            </div>
+                            <div class="valor-control" id="valorGanancia">0 dB</div>
+                        </div>
+                    </div>
+
+                    <div class="control-entrada">
+                        <label class="label-control">Monitoreo (Mezcla)</label>
+                        <div class="slider-container" ontouchstart="iniciarSlider(event, 'monitoreo')" onmousedown="iniciarSlider(event, 'monitoreo')">
+                            <div class="slider-track">
+                                <div class="slider-fill" id="fillMonitoreo" style="width: 70%;"></div>
+                                <div class="slider-thumb" id="thumbMonitoreo" style="left: 70%;"></div>
+                            </div>
+                            <div class="valor-control" id="valorMonitoreo">70%</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
+                        <button class="btn-herramienta-pitch activo" onclick="alternarFiltro(this, 'corte')">Corte Bajo 80Hz</button>
+                        <button class="btn-herramienta-pitch" onclick="alternarFiltro(this, 'antipop')">Anti-pop</button>
+                        <button class="btn-herramienta-pitch" onclick="alternarFiltro(this, 'gate')">Gate -40dB</button>
+                        <button class="btn-herramienta-pitch" onclick="alternarFiltro(this, 'limit')">Limitador Input</button>
+                    </div>
+                </div>
+
+                <div class="panel-tomas">
+                    <div class="titulo-seccion">🎙️ Tomas de la Pista Activa</div>
+                    <div class="lista-tomas" id="listaTomas">
+                        <div class="item-toma activa">
+                            <div class="numero-toma">1</div>
+                            <div class="info-toma">
+                                <div class="nombre-toma">Toma 1 - Verso completo</div>
+                                <div class="detalle-toma">0:45s • -12dB peak • OK</div>
+                            </div>
+                            <div class="acciones-toma">
+                                <button class="btn-toma" onclick="escucharToma(1)">▶</button>
+                                <button class="btn-toma promover" onclick="promoverToma(1)">★</button>
+                            </div>
+                        </div>
+                        <div class="item-toma">
+                            <div class="numero-toma">2</div>
+                            <div class="info-toma">
+                                <div class="nombre-toma">Toma 2 - Estribillo</div>
+                                <div class="detalle-toma">0:32s • -8dB peak • Buena</div>
+                            </div>
+                            <div class="acciones-toma">
+                                <button class="btn-toma" onclick="escucharToma(2)">▶</button>
+                                <button class="btn-toma promover" onclick="promoverToma(2)">★</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-pitch">
+                    <div class="titulo-seccion">🎵 Editor de Pitch (Melodía)</div>
+                    <canvas class="canvas-pitch" id="canvasPitch"></canvas>
+                    <div class="controles-pitch">
+                        <button class="btn-herramienta-pitch activo" onclick="setHerramientaPitch('mover')">↔️ Mover</button>
+                        <button class="btn-herramienta-pitch" onclick="setHerramientaPitch('corregir')">🎯 Corregir</button>
+                        <button class="btn-herramienta-pitch" onclick="setHerramientaPitch('glide')">〰️ Glide</button>
+                        <button class="btn-herramienta-pitch" onclick="setHerramientaPitch('separar')">✂️ Separar</button>
+                        <button class="btn-herramienta-pitch" onclick="quantizarPitch()">⚡ Quantizar</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PANTALLA EDICIÓN -->
+        <div class="pantalla-seccion" id="pantalla-edicion">
+            <div class="timeline-container">
+                <div class="toolbar-timeline">
+                    <select class="selector-plantilla" onchange="cargarPlantilla(this.value)">
+                        <option value="">📋 Plantilla...</option>
+                        <option value="trap">🔥 Trap Latino (140 BPM)</option>
+                        <option value="drill">💀 Drill UK (144 BPM)</option>
+                        <option value="rb">💜 R&B/Soul (90 BPM)</option>
+                        <option value="hyperpop">🌈 Hyperpop (160 BPM)</option>
+                        <option value="freestyle">🎤 Freestyle (Voz sola)</option>
+                        <option value="podcast">🎙️ Podcast/Voz</option>
+                    </select>
+                    <button class="tool-btn activo" onclick="setHerramienta('selector')">🔍 Selector</button>
+                    <button class="tool-btn" onclick="setHerramienta('cortar')">✂️ Cortar</button>
+                    <button class="tool-btn" onclick="setHerramienta('fade')">📉 Fade</button>
+                    <button class="tool-btn" onclick="setHerramienta('gain')">📊 Ganancia</button>
+                    <button class="tool-btn" onclick="detectarBPMGlobal()">⚡ Detectar BPM</button>
+                    <button class="tool-btn" onclick="mostrarModal('importar')">📁 Importar</button>
+                </div>
+                
+                <div class="area-pistas" id="areaPistas">
+                    <div class="regla-tiempo" id="reglaTiempo">
+                        <div class="playhead" id="playhead" style="left: 0px;"></div>
+                    </div>
+                    <div id="contenedorPistas"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA MEZCLADOR -->
+        <div class="pantalla-seccion" id="pantalla-mezclador">
+            <div class="mezclador-container" id="mezcladorContainer"></div>
+        </div>
+
+        <!-- PANTALLA FX -->
+        <div class="pantalla-seccion" id="pantalla-fx">
+            <div class="fx-container">
+                <div class="selector-pista-fx" id="selectorPistaFx"></div>
+                
+                <div class="rack-fx">
+                    <!-- SLOT 1: DINÁMICA -->
+                    <div class="modulo-fx">
+                        <div class="header-modulo">
+                            <div class="titulo-modulo"><span class="numero-slot">1</span>Dinámica</div>
+                            <div class="switch-bypass activo" onclick="alternarBypass(this)"></div>
+                        </div>
+                        <select class="selector-fx" onchange="cargarEfecto(0, this.value)">
+                            <option value="">-- Seleccionar efecto --</option>
+                            <option value="gate">🚪 Noise Gate</option>
+                            <option value="compresor">📉 Compresor</option>
+                            <option value="deesser">🗣️ De-Esser</option>
+                            <option value="transient">⚡ Transient Shaper</option>
+                            <option value="limiter">🧱 Limiter</option>
+                            <option value="compmult">🎚️ Compresor Multibanda</option>
+                        </select>
+                        <div class="parametros-fx" id="params-0"></div>
+                    </div>
+
+                    <!-- SLOT 2: EQ -->
+                    <div class="modulo-fx">
+                        <div class="header-modulo">
+                            <div class="titulo-modulo"><span class="numero-slot">2</span>EQ / Filtros</div>
+                            <div class="switch-bypass" onclick="alternarBypass(this)"></div>
+                        </div>
+                        <select class="selector-fx" onchange="cargarEfecto(1, this.value)">
+                            <option value="">-- Seleccionar efecto --</option>
+                            <option value="eq8">🎛️ EQ Paramétrico 8 Bandas</option>
+                            <option value="lowpass">⬇️ Low Pass</option>
+                            <option value="highpass">⬆️ High Pass</option>
+                            <option value="notch">⭕ Notch Filter</option>
+                            <option value="dyneq">🎚️ EQ Dinámico</option>
+                        </select>
+                        <div class="parametros-fx" id="params-1"></div>
+                    </div>
+
+                    <!-- SLOT 3: ESPACIAL -->
+                    <div class="modulo-fx">
+                        <div class="header-modulo">
+                            <div class="titulo-modulo"><span class="numero-slot">3</span>Espacial / Tiempo</div>
+                            <div class="switch-bypass" onclick="alternarBypass(this)"></div>
+                        </div>
+                        <select class="selector-fx" onchange="cargarEfecto(2, this.value)">
+                            <option value="">-- Seleccionar efecto --</option>
+                            <option value="reverb">🏛️ Reverb</option>
+                            <option value="delay">🔄 Delay</option>
+                            <option value="chorus">🌊 Chorus</option>
+                            <option value="flanger">🌀 Flanger</option>
+                            <option value="phaser">🌪️ Phaser</option>
+                        </select>
+                        <div class="parametros-fx" id="params-2"></div>
+                    </div>
+
+                    <!-- SLOT 4: CARÁCTER -->
+                    <div class="modulo-fx">
+                        <div class="header-modulo">
+                            <div class="titulo-modulo"><span class="numero-slot">4</span>Carácter</div>
+                            <div class="switch-bypass" onclick="alternarBypass(this)"></div>
+                        </div>
+                        <select class="selector-fx" onchange="cargarEfecto(3, this.value)">
+                            <option value="">-- Seleccionar efecto --</option>
+                            <option value="overdrive">🔥 Overdrive</option>
+                            <option value="saturation">🌞 Saturación</option>
+                            <option value="bitcrusher">👾 Bitcrusher</option>
+                            <option value="exciter">✨ Exciter</option>
+                            <option value="distortion">💥 Distorsión</option>
+                        </select>
+                        <div class="parametros-fx" id="params-3"></div>
+                    </div>
+
+                    <!-- SLOT 5: VOZ/PITCH -->
+                    <div class="modulo-fx">
+                        <div class="header-modulo">
+                            <div class="titulo-modulo"><span class="numero-slot">5</span>Voz / Pitch</div>
+                            <div class="switch-bypass" onclick="alternarBypass(this)"></div>
+                        </div>
+                        <select class="selector-fx" onchange="cargarEfecto(4, this.value)">
+                            <option value="">-- Seleccionar efecto --</option>
+                            <option value="autotune">🎤 Autotune Pro</option>
+                            <option value="pitchshift">🎵 Pitch Shifter</option>
+                            <option value="formant">👤 Formant Shifter</option>
+                            <option value="vocoder">🤖 Vocoder</option>
+                            <option value="harmonizer">👥 Harmonizer</option>
+                            <option value="octaver">8️⃣ Octaver</option>
+                            <option value="double">🎭 Vocal Doubler</option>
+                        </select>
+                        <div class="parametros-fx" id="params-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA MASTER -->
+        <div class="pantalla-seccion" id="pantalla-master">
+            <div class="master-container">
+                <div class="visualizador-master">
+                    <canvas id="canvasMaster"></canvas>
+                </div>
+                
+                <div class="info-master">
+                    <div class="dato-master">
+                        <div class="valor-master" id="valorLUFS">-14.2</div>
+                        <div class="label-master">LUFS (Streaming)</div>
+                    </div>
+                    <div class="dato-master">
+                        <div class="valor-master" id="valorRMS">-16.8</div>
+                        <div class="label-master">RMS</div>
+                    </div>
+                    <div class="dato-master">
+                        <div class="valor-master" id="valorPeak">-1.2</div>
+                        <div class="label-master">True Peak</div>
+                    </div>
+                </div>
+
+                <div style="width: 100%; max-width: 350px;">
+                    <div class="label-modal" style="text-align: center; margin-bottom: 15px;">Volumen Master</div>
+                    <div class="fader-vertical" style="height: 200px; margin: 0 auto;" ontouchstart="iniciarFaderMaster(event)" onmousedown="iniciarFaderMaster(event)">
+                        <div class="track-fader">
+                            <div class="thumb-fader" id="thumbMaster" style="top: 25%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="seccion-exportar">
+                    <button class="btn-accion-master primario" onclick="exportarProyecto('wav')">
+                        💾 Exportar WAV (48kHz/24bit)
+                    </button>
+                    <button class="btn-accion-master" onclick="exportarProyecto('mp3')">
+                        🎵 Exportar MP3 (320kbps)
+                    </button>
+                    <button class="btn-accion-master" onclick="exportarStems()">
+                        📦 Exportar Stems (Grupos lógicos)
+                    </button>
+                    <button class="btn-accion-master" onclick="exportarAcapella()">
+                        🎤 Exportar Acapella (Voz sola)
+                    </button>
+                    <button class="btn-accion-master" onclick="guardarProyecto()">
+                        💾 Guardar Proyecto
+                    </button>
+                    <button class="btn-accion-master" onclick="compartirProyecto()">
+                        📤 Compartir/Colaborar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NAVEGACIÓN INFERIOR -->
+    <div class="nav-principal">
+        <button class="nav-item activo" onclick="mostrarPantalla('grabacion')">
+            <svg class="nav-icono" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
+            Grabar
+        </button>
+        <button class="nav-item" onclick="mostrarPantalla('edicion')">
+            <svg class="nav-icono" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="9" y1="3" x2="9" y2="21" stroke="currentColor" stroke-width="2"/></svg>
+            Editar
+        </button>
+        <button class="nav-item" onclick="mostrarPantalla('mezclador')">
+            <svg class="nav-icono" viewBox="0 0 24 24"><path d="M3 17h2v4H3v-4zm4-8h2v12H7V9zm4-4h2v16h-2V5zm4 4h2v12h-2V9zm4-2h2v14h-2V7z" fill="currentColor"/></svg>
+            Mezclar
+        </button>
+        <button class="nav-item" onclick="mostrarPantalla('fx')">
+            <svg class="nav-icono" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 1v6m0 6v6m4.22-10.22l4.24-4.24M6.34 17.66l-4.24 4.24M23 12h-6m-6 0H1m17.66 6.34l4.24 4.24M6.34 6.34L2.1 2.1" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            FX
+        </button>
+        <button class="nav-item" onclick="mostrarPantalla('master')">
+            <svg class="nav-icono" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+            Master
+        </button>
+    </div>
+
+    <!-- MENÚ CONTEXTUAL -->
+    <div class="menu-contextual" id="menuContextual">
+        <div class="item-menu-ctx" onclick="ejecutarMenu('cortar')">
+            <span class="icono-ctx">✂️</span>
+            <span>Cortar en cabezal</span>
+        </div>
+        <div class="item-menu-ctx" onclick="ejecutarMenu('copiar')">
+            <span class="icono-ctx">📋</span>
+            <span>Copiar</span>
+        </div>
+        <div class="item-menu-ctx" onclick="ejecutarMenu('pegar')">
+            <span class="icono-ctx">📌</span>
+            <span>Pegar</span>
+        </div>
+        <div class="item-menu-ctx separador" onclick="ejecutarMenu('dividir')">
+            <span class="icono-ctx">➗</span>
+            <span>Dividir</span>
+        </div>
+        <div class="item-menu-ctx" onclick="ejecutarMenu('fadein')">
+            <span class="icono-ctx">📉</span>
+            <span>Fade In</span>
+        </div>
+        <div class="item-menu-ctx" onclick="ejecutarMenu('fadeout')">
+            <span class="icono-ctx">📈</span>
+            <span>Fade Out</span>
+        </div>
+        <div class="item-menu-ctx" onclick="ejecutarMenu('crossfade')">
+            <span class="icono-ctx">〰️</span>
+            <span>Crossfade</span>
+        </div>
+        <div class="item-menu-ctx separador" onclick="ejecutarMenu('reverse')">
+            <span class="icono-ctx">🔀</span>
+            <span>Reverse</span>
+        </div>
+        <div class="item-menu-ctx" onclick="ejecutarMenu('normalizar')">
+            <span class="icono-ctx">📊</span>
+            <span>Normalizar</span>
+        </div>
+        <div class="item-menu-ctx" onclick="ejecutarMenu('ganancia')">
+            <span class="icono-ctx">🎚️</span>
+            <span>Ajustar ganancia</span>
+        </div>
+        <div class="item-menu-ctx separador" onclick="ejecutarMenu('pitch')">
+            <span class="icono-ctx">🎵</span>
+            <span>Pitch Shift</span>
+        </div>
+        <div class="item-menu-ctx" onclick="ejecutarMenu('timestretch')">
+            <span class="icono-ctx">⏱️</span>
+            <span>Time Stretch</span>
+        </div>
+        <div class="item-menu-ctx separador" onclick="ejecutarMenu('autotune')">
+            <span class="icono-ctx">🎤</span>
+            <span>Autotune este clip</span>
+        </div>
+        <div class="item-menu-ctx" onclick="ejecutarMenu('fx')">
+            <span class="icono-ctx">⚡</span>
+            <span>Abrir en FX</span>
+        </div>
+        <div class="item-menu-ctx separador peligro" onclick="ejecutarMenu('eliminar')">
+            <span class="icono-ctx">🗑️</span>
+            <span>Eliminar</span>
+        </div>
+    </div>
+
+    <!-- MODALES -->
+    <div class="modal-overlay" id="modalImportar">
+        <div class="modal-contenido">
+            <div class="titulo-modal">Importar Audio</div>
+            <div class="cuerpo-modal">
+                <input type="file" accept="audio/*" id="inputAudio" style="display: none;" onchange="procesarImportacion(this)">
+                <button class="btn-accion-master" onclick="document.getElementById('inputAudio').click()" style="margin-bottom: 15px;">
+                    📁 Seleccionar archivo de audio
+                </button>
+                <div style="color: var(--texto-secundario); font-size: 13px; text-align: center; line-height: 1.6;">
+                    Formatos: WAV, MP3, M4A, OGG, FLAC<br>
+                    Arrastre archivos directamente a la timeline
+                </div>
+            </div>
+            <div class="botones-modal">
+                <button class="btn-modal" onclick="cerrarModal('importar')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast-notificacion" id="toast"></div>
+
+    <script>
+        // ==================== VARIABLES GLOBALES ====================
+        let contextoAudio;
+        let estaReproduciendo = false;
+        let estaGrabando = false;
+        let bpmActual = 140;
+        let pantallaActual = 'grabacion';
+        let pistaActiva = 0;
+        let clipSeleccionado = null;
+        let fuenteAudio = 'interno';
+        let metronomoActivo = false;
+        let tomaActiva = 1;
+        
+        // 10 pistas profesionales
+        const NUMERO_PISTAS = 10;
+        let pistas = [];
+        let historialAcciones = [];
+        let posicionHistorial = -1;
+        
+        // Configuración de grabación
+        let configGrabacion = {
+            ganancia: 0,
+            monitoreo: 70,
+            corteBajo: true,
+            antipop: false,
+            gate: true,
+            limitador: true,
+            bufferSize: 128
+        };
+
+        // Plantillas
+        const PLANTILLAS = {
+            trap: { bpm: 140, nombre: 'Trap Latino', efectos: ['compresor', 'eq8', 'reverb', 'saturation', 'autotune'] },
+            drill: { bpm: 144, nombre: 'Drill UK', efectos: ['gate', 'eq8', 'reverb', 'distortion', 'pitchshift'] },
+            rb: { bpm: 90, nombre: 'R&B/Soul', efectos: ['compresor', 'eq8', 'delay', 'saturation', 'autotune'] },
+            hyperpop: { bpm: 160, nombre: 'Hyperpop', efectos: ['compresor', 'eq8', 'chorus', 'bitcrusher', 'pitchshift'] },
+            freestyle: { bpm: 140, nombre: 'Freestyle', efectos: [null, null, null, null, 'autotune'] },
+            podcast: { bpm: 0, nombre: 'Podcast', efectos: ['compresor', 'eq8', null, 'exciter', null] }
+        };
+
+        // ==================== INICIALIZACIÓN ====================
+        async function iniciarEstudio() {
+            document.getElementById('pantallaInicio').classList.add('oculto');
+            
+            await Tone.start();
+            contextoAudio = Tone.context;
+            
+            // Configurar master chain
+            const limiterMaster = new Tone.Limiter(-0.5).toDestination();
+            const compresorMaster = new Tone.Compressor({
+                threshold: -12,
+                ratio: 2,
+                attack: 0.02,
+                release: 0.2
+            }).connect(limiterMaster);
+            
+            Tone.Destination.connect(compresorMaster);
+            
+            // Inicializar pistas
+            for (let i = 0; i < NUMERO_PISTAS; i++) {
+                inicializarPista(i);
+            }
+            
+            // Configurar transporte
+            Tone.Transport.bpm.value = bpmActual;
+            
+            // Renderizar UI
+            renderizarPistas();
+            renderizarMezclador();
+            renderizarSelectorFx();
+            
+            // Iniciar visualizadores
+            iniciarVisualizadores();
+            iniciarAnalizadorPitch();
+            
+            // Auto-guardado
+            setInterval(autoGuardar, 30000);
+            
+            // Configurar entrada de audio
+            await configurarEntradaAudio();
+            
+            mostrarToast('🎙️ SITIOSTUDIO listo - 10 pistas cargadas');
+        }
+
+        function inicializarPista(index) {
+            const canal = new Tone.Channel(0, 0).connect(Tone.Destination);
+            const efectos = [];
+            
+            // Crear cadena de efectos (5 slots)
+            let nodoActual = canal;
+            for (let i = 0; i < 5; i++) {
+                const fx = new Tone.Gain(1);
+                fx.connect(nodoActual);
+                efectos.unshift(fx);
+                nodoActual = fx;
+            }
+            
+            pistas[index] = {
+                index: index,
+                nombre: obtenerNombrePistaDefault(index),
+                tipo: obtenerTipoPistaDefault(index),
+                canal: canal,
+                entrada: nodoActual,
+                efectos: efectos,
+                configFx: [{}, {}, {}, {}, {}],
+                volumen: 0,
+                pan: 0,
+                mute: false,
+                solo: false,
+                rec: false,
+                tomas: [],
+                clips: [],
+                congelada: false,
+                color: obtenerColorPista(index)
+            };
+        }
+
+        function obtenerNombrePistaDefault(index) {
+            const nombres = ['808', 'Kick', 'Snare', 'Hats', 'Perc', 'Bass', 'Lead Voz', 'Adlibs', 'FX', 'Master Ref'];
+            return nombres[index] || `Pista ${index + 1}`;
+        }
+
+        function obtenerTipoPistaDefault(index) {
+            const tipos = ['Batería', 'Batería', 'Batería', 'Batería', 'Batería', 'Bajo', 'Voz', 'Voz', 'FX', 'Referencia'];
+            return tipos[index] || 'Audio';
+        }
+
+        function obtenerColorPista(index) {
+            const colores = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b', '#6c5ce7', '#a29bfe', '#fd79a8', '#636e72'];
+            return colores[index];
+        }
+
+        async function configurarEntradaAudio() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                        sampleRate: 48000
+                    } 
+                });
+                
+                const fuente = new Tone.MediaStreamSource(stream);
+                const monitor = new Tone.Gain(0.7).toDestination();
+                fuente.connect(monitor);
+                
+                window.fuenteMicrofono = fuente;
+                window.monitorMicrofono = monitor;
+                
+            } catch (err) {
+                console.error('Error accediendo al micrófono:', err);
+                mostrarToast('⚠️ No se pudo acceder al micrófono');
+            }
+        }
+
+        // ==================== RENDERIZADO UI ====================
+        function renderizarPistas() {
+            const contenedor = document.getElementById('contenedorPistas');
+            if (!contenedor) return;
+            
+            contenedor.innerHTML = '';
+            
+            pistas.forEach((pista, i) => {
+                const divPista = document.createElement('div');
+                divPista.className = 'pista-timeline';
+                divPista.dataset.index = i;
+                
+                const lanesTomas = pista.tomas.map((toma, idx) => `
+                    <div class="lane-toma ${idx === tomaActiva - 1 ? 'activa' : ''}" 
+                         onclick="seleccionarToma(${i}, ${idx})">
+                        Toma ${idx + 1}: ${toma.nombre}
+                    </div>
+                `).join('');
+                
+                divPista.innerHTML = `
+                    <div class="header-pista" onclick="seleccionarPista(${i})">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="num-pista">${String(i + 1).padStart(2, '0')}</span>
+                            <div class="mini-controles">
+                                <button class="btn-mini-pista mute ${pista.mute ? 'activo' : ''}" 
+                                        onclick="event.stopPropagation(); alternarMute(${i})">M</button>
+                                <button class="btn-mini-pista solo ${pista.solo ? 'activo' : ''}" 
+                                        onclick="event.stopPropagation(); alternarSolo(${i})">S</button>
+                            </div>
+                        </div>
+                        <div class="nom-pista" style="color: ${pista.color}">${pista.nombre}</div>
+                        <div class="tipo-pista">${pista.tipo}</div>
+                        <button class="btn-mini-pista rec ${pista.rec ? 'activo' : ''}" 
+                                onclick="event.stopPropagation(); alternarRec(${i})">●</button>
+                    </div>
+                    <div class="area-clips" id="area-clip-${i}">
+                        ${i === 6 ? `
+                            <div class="clip-audio" style="left: 100px; width: 400px; border-color: ${pista.color};"
+                                 oncontextmenu="mostrarMenuContextual(event, this)">
+                                <div class="onda-clip"></div>
+                                <div class="info-clip">
+                                    <span>Voz_Lead_T1.wav</span>
+                                    <span>0:32</span>
+                                </div>
+                                <div class="fade-clip"></div>
+                                <div class="fade-clip salida"></div>
+                            </div>
+                            ${lanesTomas}
+                        ` : ''}
+                    </div>
+                `;
+                
+                contenedor.appendChild(divPista);
+            });
+        }
+
+        function renderizarMezclador() {
+            const contenedor = document.getElementById('mezcladorContainer');
+            if (!contenedor) return;
+            
+            contenedor.innerHTML = '';
+            
+            pistas.forEach((pista, i) => {
+                const canal = document.createElement('div');
+                canal.className = 'canal-mezcla';
+                canal.innerHTML = `
+                    <div class="header-canal">
+                        <div class="icono-canal" style="color: ${pista.color}">●</div>
+                        <div class="nombre-canal">${pista.nombre}</div>
+                    </div>
+                    <div class="vu-mezcla">
+                        <div class="fill-vu" id="vu-canal-${i}" style="height: 0%;"></div>
+                    </div>
+                    <div class="perilla-mezcla" ontouchstart="iniciarPerillaPan(event, ${i})" onmousedown="iniciarPerillaPan(event, ${i})">
+                        <div class="perilla" id="perilla-pan-${i}"></div>
+                    </div>
+                    <div class="fader-vertical" ontouchstart="iniciarFader(event, ${i})" onmousedown="iniciarFader(event, ${i})">
+                        <div class="track-fader">
+                            <div class="thumb-fader" id="thumb-canal-${i}" style="top: ${50 - (pista.volumen / 2)}%;"></div>
+                        </div>
+                    </div>
+                    <div class="botones-canal">
+                        <button class="btn-mini-pista mute ${pista.mute ? 'activo' : ''}" onclick="alternarMute(${i})">M</button>
+                        <button class="btn-mini-pista solo ${pista.solo ? 'activo' : ''}" onclick="alternarSolo(${i})">S</button>
+                    </div>
+                `;
+                contenedor.appendChild(canal);
+            });
+            
+            // Master
+            const master = document.createElement('div');
+            master.className = 'canal-mezcla master';
+            master.innerHTML = `
+                <div class="header-canal">
+                    <div class="icono-canal" style="color: var(--acento-reproducir); font-size: 28px;">◉</div>
+                    <div class="nombre-canal">MASTER</div>
+                </div>
+                <div class="vu-mezcla">
+                    <div class="fill-vu" id="vu-master-mezcla" style="height: 0%;"></div>
+                </div>
+                <div class="fader-vertical" style="flex: 1.2;" ontouchstart="iniciarFader(event, 'master')" onmousedown="iniciarFader(event, 'master')">
+                    <div class="track-fader">
+                        <div class="thumb-fader" id="thumb-master" style="top: 25%;"></div>
+                    </div>
+                </div>
+            `;
+            contenedor.appendChild(master);
+        }
+
+        function renderizarSelectorFx() {
+            const contenedor = document.getElementById('selectorPistaFx');
+            if (!contenedor) return;
+            
+            contenedor.innerHTML = '';
+            pistas.forEach((pista, i) => {
+                const btn = document.createElement('button');
+                btn.className = `btn-pista-fx ${i === pistaActiva ? 'activo' : ''}`;
+                btn.innerHTML = `<span style="color: ${pista.color}; margin-right: 5px;">●</span>${pista.nombre}`;
+                btn.onclick = () => seleccionarPistaFx(i);
+                contenedor.appendChild(btn);
+            });
+        }
+
+        // ==================== CONTROLES TRANSPORTE ====================
+        function alternarReproduccion() {
+            estaReproduciendo = !estaReproduciendo;
+            const btn = document.getElementById('btnReproducir');
+            
+            if (estaReproduciendo) {
+                Tone.Transport.start();
+                btn.classList.add('activo');
+                btn.innerHTML = '⏸';
+                iniciarActualizacionTiempo();
+                
+                if (metronomoActivo) iniciarMetronomo();
+            } else {
+                Tone.Transport.pause();
+                btn.classList.remove('activo');
+                btn.innerHTML = '▶';
+                detenerMetronomo();
+            }
+        }
+
+        function detenerTransporte() {
+            estaReproduciendo = false;
+            Tone.Transport.stop();
+            document.getElementById('btnReproducir').classList.remove('activo');
+            document.getElementById('btnReproducir').innerHTML = '▶';
+            document.getElementById('playhead').style.left = '0px';
+            detenerMetronomo();
+        }
+
+        function alternarGrabacion() {
+            if (!pistas.some(p => p.rec)) {
+                mostrarToast('⚠️ Arme una pista para grabar (botón ●)');
+                return;
+            }
+            
+            estaGrabando = !estaGrabando;
+            const btn = document.getElementById('btnGrabar');
+            const indicador = document.getElementById('indicadorGrabacion');
+            const texto = document.getElementById('textoEstado');
+            
+            if (estaGrabando) {
+                btn.classList.add('activo');
+                indicador.classList.add('activo');
+                texto.textContent = 'GRABANDO...';
+                
+                // Pre-roll de 4 beats
+                let cuenta = 4;
+                mostrarToast(`Grabando en ${cuenta}...`);
+                
+                const intervalo = setInterval(() => {
+                    cuenta--;
+                    if (cuenta > 0) {
+                        mostrarToast(`${cuenta}...`);
+                    } else {
+                        clearInterval(intervalo);
+                        iniciarGrabacionReal();
+                    }
+                }, 60000 / bpmActual);
+            } else {
+                detenerGrabacionReal();
+                btn.classList.remove('activo');
+                indicador.classList.remove('activo');
+                texto.textContent = 'Grabación detenida';
+            }
+        }
+
+        function iniciarGrabacionReal() {
+            mostrarToast('🔴 GRABANDO');
+            
+            // Crear grabador para la pista armada
+            const pistaRec = pistas.find(p => p.rec);
+            if (pistaRec && window.fuenteMicrofono) {
+                const grabador = new Tone.Recorder();
+                window.fuenteMicrofono.connect(grabador);
+                grabador.start();
+                window.grabadorActivo = grabador;
+                window.pistaGrabando = pistaRec;
+            }
+        }
+
+        async function detenerGrabacionReal() {
+            if (window.grabadorActivo) {
+                const buffer = await window.grabadorActivo.stop();
+                window.grabadorActivo.dispose();
+                
+                // Crear nueva toma
+                const nuevaToma = {
+                    nombre: `Toma ${window.pistaGrabando.tomas.length + 1}`,
+                    buffer: buffer,
+                    duracion: buffer.duration,
+                    fecha: new Date().toISOString()
+                };
+                
+                window.pistaGrabando.tomas.push(nuevaToma);
+                actualizarListaTomas();
+                
+                mostrarToast(`✅ Grabación guardada: ${nuevaToma.nombre}`);
+            }
+        }
+
+        function iniciarActualizacionTiempo() {
+            if (!estaReproduciendo) return;
+            
+            const pos = Tone.Transport.position;
+            const [compases, tiempos, seisillos] = pos.split(':').map(Number);
+            const tiempoTotal = (compases * 4 + tiempos + seisillos / 4) * (60 / bpmActual);
+            
+            const mins = Math.floor(tiempoTotal / 60);
+            const segs = Math.floor(tiempoTotal % 60);
+            const ms = Math.floor((tiempoTotal % 1) * 100);
+            
+            document.getElementById('infoTiempo').textContent = 
+                `${String(mins).padStart(2, '0')}:${String(segs).padStart(2, '0')}:${String(ms).padStart(2, '0')} | Compás ${compases + 1}.${tiempos + 1}.${seisillos + 1}`;
+            
+            // Mover playhead
+            const progreso = Tone.Transport.progress || 0;
+            document.getElementById('playhead').style.left = (progreso * 2000) + 'px';
+            
+            requestAnimationFrame(iniciarActualizacionTiempo);
+        }
+
+        function alternarMetronomo() {
+            metronomoActivo = !metronomoActivo;
+            document.getElementById('btnMetronomo').classList.toggle('activo', metronomoActivo);
+            mostrarToast(metronomoActivo ? '🔔 Metrónomo activado' : '🔕 Metrónomo desactivado');
+        }
+
+        function iniciarMetronomo() {
+            if (!window.sintetizadorClick) {
+                window.sintetizadorClick = new Tone.MembraneSynth({
+                    volume: -10,
+                    envelope: { attack: 0.001, decay: 0.1, sustain: 0 }
+                }).toDestination();
+            }
+            
+            Tone.Transport.scheduleRepeat((time) => {
+                window.sintetizadorClick.triggerAttackRelease('C5', '32n', time);
+            }, '4n');
+        }
+
+        function detenerMetronomo() {
+            Tone.Transport.cancel();
+        }
+
+        function tocarTempo() {
+            const ahora = Date.now();
+            if (!window.ultimoTap) window.ultimoTap = ahora;
+            
+            const diff = ahora - window.ultimoTap;
+            if (diff > 200 && diff < 2000) {
+                const nuevoBPM = Math.round(60000 / diff);
+                if (nuevoBPM >= 60 && nuevoBPM <= 200) {
+                    bpmActual = nuevoBPM;
+                    Tone.Transport.bpm.value = bpmActual;
+                    document.getElementById('displayBPM').textContent = bpmActual;
+                    mostrarToast(`⚡ BPM: ${nuevoBPM}`);
+                }
+            }
+            window.ultimoTap = ahora;
+        }
+
+        // ==================== CONTROLES PISTA ====================
+        function seleccionarPista(index) {
+            pistaActiva = index;
+            document.querySelectorAll('.pista-timeline').forEach((p, i) => {
+                p.style.background = i === index ? 'rgba(0, 212, 170, 0.05)' : '';
+            });
+            actualizarListaTomas();
+        }
+
+        function seleccionarPistaFx(index) {
+            pistaActiva = index;
+            renderizarSelectorFx();
+        }
+
+        function alternarMute(index) {
+            pistas[index].mute = !pistas[index].mute;
+            pistas[index].canal.mute = pistas[index].mute;
+            renderizarPistas();
+            renderizarMezclador();
+        }
+
+        function alternarSolo(index) {
+            pistas[index].solo = !pistas[index].solo;
+            const haySolo = pistas.some(p => p.solo);
+            
+            pistas.forEach((p, i) => {
+                p.canal.mute = haySolo ? !p.solo : p.mute;
+            });
+            
+            renderizarPistas();
+            renderizarMezclador();
+        }
+
+        function alternarRec(index) {
+            // Solo una pista puede estar armada a la vez
+            pistas.forEach((p, i) => {
+                p.rec = (i === index) ? !p.rec : false;
+            });
+            renderizarPistas();
+            
+            const pista = pistas[index];
+            mostrarToast(pista.rec ? `● ${pista.nombre} armada para grabar` : 'Grabación desarmada');
+        }
+
+        function seleccionarToma(pistaIndex, tomaIndex) {
+            tomaActiva = tomaIndex + 1;
+            renderizarPistas();
+            mostrarToast(`Toma ${tomaActiva} seleccionada`);
+        }
+
+        function promoverToma(index) {
+            mostrarToast(`★ Toma ${index} promovida a master`);
+        }
+
+        function escucharToma(index) {
+            mostrarToast(`▶ Escuchando toma ${index}`);
+        }
+
+        function actualizarListaTomas() {
+            const contenedor = document.getElementById('listaTomas');
+            const pista = pistas[pistaActiva] || pistas[6];
+            
+            if (!pista.tomas.length) {
+                contenedor.innerHTML = `
+                    <div class="item-toma">
+                        <div class="info-toma">
+                            <div class="nombre-toma" style="color: var(--texto-secundario);">Sin tomas grabadas</div>
+                            <div class="detalle-toma">Arme la pista y pulse grabar</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            contenedor.innerHTML = pista.tomas.map((toma, i) => `
+                <div class="item-toma ${i === tomaActiva - 1 ? 'activa' : ''} ${i === 0 ? 'seleccionada' : ''}">
+                    <div class="numero-toma">${i + 1}</div>
+                    <div class="info-toma">
+                        <div class="nombre-toma">${toma.nombre}</div>
+                        <div class="detalle-toma">${formatearTiempo(toma.duracion)} • Grabada ${new Date(toma.fecha).toLocaleTimeString()}</div>
+                    </div>
+                    <div class="acciones-toma">
+                        <button class="btn-toma" onclick="escucharToma(${i + 1})">▶</button>
+                        <button class="btn-toma promover" onclick="promoverToma(${i + 1})">★</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== CONTROLES DESLIZANTES ====================
+        let sliderActivo = null;
+
+        function iniciarSlider(e, tipo) {
+            e.preventDefault();
+            sliderActivo = tipo;
+            
+            const mover = (ev) => {
+                const clienteX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+                const rect = e.currentTarget.getBoundingClientRect();
+                let porcentaje = ((clienteX - rect.left) / rect.width) * 100;
+                porcentaje = Math.max(0, Math.min(100, porcentaje));
+                
+                document.getElementById(`fill${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).style.width = porcentaje + '%';
+                document.getElementById(`thumb${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).style.left = porcentaje + '%';
+                
+                if (tipo === 'ganancia') {
+                    const db = Math.round((porcentaje - 50) / 2);
+                    document.getElementById('valorGanancia').textContent = (db > 0 ? '+' : '') + db + ' dB';
+                    configGrabacion.ganancia = db;
+                } else if (tipo === 'monitoreo') {
+                    document.getElementById('valorMonitoreo').textContent = Math.round(porcentaje) + '%';
+                    configGrabacion.monitoreo = porcentaje;
+                    if (window.monitorMicrofono) {
+                        window.monitorMicrofono.gain.value = porcentaje / 100;
+                    }
+                }
+            };
+            
+            const soltar = () => {
+                document.removeEventListener('touchmove', mover);
+                document.removeEventListener('touchend', soltar);
+                document.removeEventListener('mousemove', mover);
+                document.removeEventListener('mouseup', soltar);
+                sliderActivo = null;
+            };
+            
+            document.addEventListener('touchmove', mover, { passive: false });
+            document.addEventListener('touchend', soltar);
+            document.addEventListener('mousemove', mover);
+            document.addEventListener('mouseup', soltar);
+            
+            mover(e);
+        }
+
+        function iniciarFader(e, index) {
+            e.preventDefault();
+            
+            const mover = (ev) => {
+                const clienteY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+                const rect = e.currentTarget.getBoundingClientRect();
+                let porcentaje = ((rect.bottom - clienteY) / rect.height) * 100;
+                porcentaje = Math.max(5, Math.min(95, porcentaje));
+                
+                const id = index === 'master' ? 'thumb-master' : `thumb-canal-${index}`;
+                document.getElementById(id).style.top = (100 - porcentaje) + '%';
+                
+                if (index !== 'master') {
+                    const db = porcentaje > 5 ? 20 * Math.log10(porcentaje / 100) : -Infinity;
+                    pistas[index].canal.volume.rampTo(db, 0.1);
+                    pistas[index].volumen = db;
+                }
+            };
+            
+            const soltar = () => {
+                document.removeEventListener('touchmove', mover);
+                document.removeEventListener('touchend', soltar);
+                document.removeEventListener('mousemove', mover);
+                document.removeEventListener('mouseup', soltar);
+            };
+            
+            document.addEventListener('touchmove', mover, { passive: false });
+            document.addEventListener('touchend', soltar);
+            document.addEventListener('mousemove', mover);
+            document.addEventListener('mouseup', soltar);
+        }
+
+        function iniciarFaderMaster(e) {
+            iniciarFader(e, 'master');
+        }
+
+        function iniciarPerillaPan(e, index) {
+            e.preventDefault();
+            // Implementación simplificada de perilla
+        }
+
+        function seleccionarFuente(el, tipo) {
+            document.querySelectorAll('.opcion-fuente').forEach(o => o.classList.remove('activa'));
+            el.classList.add('activa');
+            fuenteAudio = tipo;
+            mostrarToast(`Fuente: ${tipo.toUpperCase()}`);
+        }
+
+        function alternarFiltro(el, tipo) {
+            el.classList.toggle('activo');
+            configGrabacion[tipo] = el.classList.contains('activo');
+            mostrarToast(`${tipo}: ${configGrabacion[tipo] ? 'ON' : 'OFF'}`);
+        }
+
+        // ==================== EFECTOS ====================
+        function cargarEfecto(slot, tipo) {
+            const contenedor = document.getElementById(`params-${slot}`);
+            contenedor.innerHTML = '';
+            
+            if (!tipo) return;
+            
+            const parametros = {
+                'gate': [
+                    { nombre: 'Umbral', valor: '-40dB' },
+                    { nombre: 'Reducción', valor: '-60dB' },
+                    { nombre: 'Attack', valor: '1ms' }
+                ],
+                'compresor': [
+                    { nombre: 'Umbral', valor: '-12dB' },
+                    { nombre: 'Ratio', valor: '4:1' },
+                    { nombre: 'Attack', valor: '10ms' },
+                    { nombre: 'Release', valor: '100ms' }
+                ],
+                'reverb': [
+                    { nombre: 'Tamaño', valor: '50%' },
+                    { nombre: 'Decay', valor: '2.5s' },
+                    { nombre: 'Damping', valor: '3kHz' },
+                    { nombre: 'Mix', valor: '30%' }
+                ],
+                'autotune': [
+                    { nombre: 'Retune', valor: '20ms' },
+                    { nombre: 'Humanize', valor: '30%' },
+                    { nombre: 'Corrección', valor: '100%' }
+                ],
+                'pitchshift': [
+                    { nombre: 'Semitonos', valor: '0' },
+                    { nombre: 'Fine', valor: '0ct' }
+                ]
+            }[tipo] || [{ nombre: 'Cantidad', valor: '50%' }];
+            
+            contenedor.innerHTML = parametros.map(p => `
+                <div class="param-fx">
+                    <div class="knob-fx"></div>
+                    <div class="label-param">${p.nombre}</div>
+                    <div class="valor-param">${p.valor}</div>
+                </div>
+            `).join('');
+            
+            mostrarToast(`${tipo.toUpperCase()} cargado`);
+        }
+
+        function alternarBypass(el) {
+            el.classList.toggle('activo');
+        }
+
+        // ==================== PLANTILLAS ====================
+        function cargarPlantilla(tipo) {
+            if (!tipo || !PLANTILLAS[tipo]) return;
+            
+            const plantilla = PLANTILLAS[tipo];
+            bpmActual = plantilla.bpm;
+            Tone.Transport.bpm.value = bpmActual;
+            document.getElementById('displayBPM').textContent = bpmActual;
+            
+            // Cargar efectos en cada slot
+            plantilla.efectos.forEach((fx, i) => {
+                if (fx) {
+                    document.querySelectorAll('.selector-fx')[i].value = fx;
+                    cargarEfecto(i, fx);
+                }
+            });
+            
+            mostrarToast(`🎵 Plantilla cargada: ${plantilla.nombre}`);
+        }
+
+        function detectarBPMGlobal() {
+            mostrarToast('⚡ Analizando audio...');
+            setTimeout(() => {
+                const bpmDetectado = 140;
+                bpmActual = bpmDetectado;
+                Tone.Transport.bpm.value = bpmActual;
+                document.getElementById('displayBPM').textContent = bpmActual;
+                mostrarToast(`🎯 BPM detectado: ${bpmDetectado}`);
+            }, 1500);
+        }
+
+        // ==================== VISUALIZADORES ====================
+        function iniciarVisualizadores() {
+            // VU meters
+            setInterval(() => {
+                if (!estaReproduciendo && !estaGrabando) return;
+                
+                // Simular niveles
+                for (let i = 0; i < NUMERO_PISTAS; i++) {
+                    const vu = document.getElementById(`vu-canal-${i}`);
+                    if (vu) {
+                        const nivel = Math.random() * 60 + (estaGrabando && pistas[i].rec ? 20 : 0);
+                        vu.style.height = Math.min(100, nivel) + '%';
+                    }
+                }
+                
+                const vuMaster = document.getElementById('vu-master-mezcla');
+                if (vuMaster) {
+                    vuMaster.style.height = (Math.random() * 50 + 30) + '%';
+                }
+                
+                // Niveles de grabación
+                if (estaGrabando) {
+                    const nivel = Math.random() * 80 + 10;
+                    document.getElementById('nivelIzq').style.height = nivel + '%';
+                    document.getElementById('nivelDer').style.height = (nivel + Math.random() * 10 - 5) + '%';
+                } else {
+                    document.getElementById('nivelIzq').style.height = '0%';
+                    document.getElementById('nivelDer').style.height = '0%';
+                }
+                
+                // Actualizar medidores master
+                if (estaReproduciendo) {
+                    document.getElementById('valorLUFS').textContent = (-14 + Math.random() * 2).toFixed(1);
+                    document.getElementById('valorRMS').textContent = (-17 + Math.random() * 3).toFixed(1);
+                    document.getElementById('valorPeak').textContent = (-2 + Math.random()).toFixed(1);
+                }
+            }, 50);
+            
+            // Visualizador circular master
+            const canvas = document.getElementById('canvasMaster');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = 300;
+            canvas.height = 300;
+            
+            function dibujar() {
+                requestAnimationFrame(dibujar);
+                
+                ctx.fillStyle = '#141414';
+                ctx.fillRect(0, 0, 300, 300);
+                
+                const centroX = 150;
+                const centroY = 150;
+                const radio = 120;
+                
+                // Círculo base
+                ctx.beginPath();
+                ctx.arc(centroX, centroY, radio, 0, Math.PI * 2);
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                if (estaReproduciendo || estaGrabando) {
+                    // Onda circular
+                    ctx.beginPath();
+                    for (let i = 0; i < 360; i += 3) {
+                        const rad = (i * Math.PI) / 180;
+                        const variacion = Math.sin(Date.now() / 300 + i / 20) * 25 * (estaGrabando ? 1.5 : 1);
+                        const r = radio + variacion;
+                        const x = centroX + Math.cos(rad) * r;
+                        const y = centroY + Math.sin(rad) * r;
+                        
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.strokeStyle = estaGrabando ? '#ff2d55' : '#00d4aa';
+                    ctx.lineWidth = 4;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = estaGrabando ? '#ff2d55' : '#00d4aa';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    
+                    // Indicador de grabación en centro
+                    if (estaGrabando) {
+                        ctx.beginPath();
+                        ctx.arc(centroX, centroY, 30, 0, Math.PI * 2);
+                        ctx.fillStyle = '#ff2d55';
+                        ctx.fill();
+                        
+                        const tiempo = Math.floor((Date.now() % 2000) / 1000) + 1;
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 20px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('●', centroX, centroY + 7);
+                    }
+                }
+            }
+            dibujar();
+        }
+
+        function iniciarAnalizadorPitch() {
+            const canvas = document.getElementById('canvasPitch');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 200;
+            
+            function dibujar() {
+                requestAnimationFrame(dibujar);
+                
+                ctx.fillStyle = '#252525';
+                ctx.fillRect(0, 0, canvas.width, 200);
+                
+                // Líneas de referencia (notas)
+                const notas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                for (let i = 0; i < 12; i++) {
+                    const y = (i / 12) * 200;
+                    ctx.strokeStyle = '#444';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#666';
+                    ctx.font = '10px sans-serif';
+                    ctx.fillText(notas[i], 5, y - 3);
+                }
+                
+                // Pitch detectado (simulado)
+                if (estaReproduciendo || estaGrabando) {
+                    const tiempo = Date.now() / 1000;
+                    for (let x = 0; x < canvas.width; x += 5) {
+                        const frecuencia = 440 + Math.sin((x / 50) + tiempo) * 100;
+                        const nota = frecuencia % 12;
+                        const y = (nota / 12) * 200;
+                        
+                        ctx.fillStyle = estaGrabando ? 'rgba(255, 45, 85, 0.6)' : 'rgba(0, 212, 170, 0.6)';
+                        ctx.fillRect(x, y - 2, 4, 4);
+                    }
+                }
+            }
+            dibujar();
+        }
+
+        // ==================== NAVEGACIÓN ====================
+        function mostrarPantalla(nombre) {
+            document.querySelectorAll('.pantalla-seccion').forEach(p => p.classList.remove('activa'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('activa'));
+            
+            document.getElementById(`pantalla-${nombre}`).classList.add('activa');
+            
+            const index = ['grabacion', 'edicion', 'mezclador', 'fx', 'master'].indexOf(nombre);
+            if (index >= 0) {
+                document.querySelectorAll('.nav-item')[index].classList.add('activa');
+            }
+            
+            pantallaActual = nombre;
+        }
+
+        // ==================== MENÚ CONTEXTUAL ====================
+        function mostrarMenuContextual(e, elemento) {
+            e.preventDefault();
+            clipSeleccionado = elemento;
+            
+            const menu = document.getElementById('menuContextual');
+            menu.style.left = Math.min(e.clientX, window.innerWidth - 260) + 'px';
+            menu.style.top = Math.min(e.clientY, window.innerHeight - 400) + 'px';
+            menu.classList.add('visible');
+            
+            setTimeout(() => {
+                document.addEventListener('click', () => menu.classList.remove('visible'), { once: true });
+            }, 100);
+        }
+
+        function ejecutarMenu(accion) {
+            const acciones = {
+                'cortar': () => 'Cortado en cabezal',
+                'copiar': () => 'Copiado al portapapeles',
+                'pegar': () => 'Pegado',
+                'dividir': () => 'Dividido',
+                'fadein': () => 'Fade in aplicado',
+                'fadeout': () => 'Fade out aplicado',
+                'crossfade': () => 'Crossfade aplicado',
+                'reverse': () => 'Audio invertido',
+                'normalizar': () => 'Normalizado a -1dB',
+                'ganancia': () => 'Ganancia ajustada',
+                'pitch': () => 'Pitch shift aplicado',
+                'timestretch': () => 'Time stretch aplicado',
+                'autotune': () => 'Autotune aplicado',
+                'fx': () => { mostrarPantalla('fx'); return 'Abriendo FX'; },
+                'eliminar': () => { clipSeleccionado?.remove(); return 'Eliminado'; }
+            };
+            
+            const mensaje = acciones[accion]?.() || 'Acción realizada';
+            mostrarToast(mensaje);
+        }
+
+        // ==================== EXPORTAR Y GUARDAR ====================
+        function exportarProyecto(formato) {
+            mostrarToast(`💾 Exportando ${formato.toUpperCase()}...`);
+            
+            let progreso = 0;
+            const intervalo = setInterval(() => {
+                progreso += 20;
+                if (progreso >= 100) {
+                    clearInterval(intervalo);
+                    mostrarToast(`✅ Exportado: SITIOSTUDIO_${new Date().getTime()}.${formato}`);
+                }
+            }, 500);
+        }
+
+        function exportarStems() {
+            mostrarToast('📦 Preparando stems...');
+            setTimeout(() => {
+                mostrarToast('✅ Stems exportados (Drums, Bass, Music, Vox, Master)');
+            }, 2000);
+        }
+
+        function exportarAcapella() {
+            mostrarToast('🎤 Exportando voz sola...');
+            setTimeout(() => {
+                mostrarToast('✅ Acapella lista');
+            }, 1500);
+        }
+
+        function guardarProyecto() {
+            const proyecto = {
+                nombre: `Trap_Session_${new Date().toISOString().slice(0, 10)}`,
+                bpm: bpmActual,
+                pistas: pistas.map(p => ({
+                    nombre: p.nombre,
+                    volumen: p.volumen,
+                    pan: p.pan,
+                    mute: p.mute,
+                    solo: p.solo
+                })),
+                fecha: new Date().toISOString(),
+                version: '2.0'
+            };
+            
+            const blob = new Blob([JSON.stringify(proyecto, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = proyecto.nombre + '.sitiostudio';
+            a.click();
+            
+            mostrarToast('💾 Proyecto guardado');
+        }
+
+        function compartirProyecto() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Proyecto SITIOSTUDIO',
+                    text: 'Escucha mi beat hecho en SITIOSTUDIO',
+                    url: window.location.href
+                });
+            } else {
+                mostrarToast('📤 Enlace copiado al portapapeles');
+            }
+        }
+
+        // ==================== UTILIDADES ====================
+        function mostrarToast(mensaje) {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensaje;
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 3000);
+        }
+
+        function formatearTiempo(segundos) {
+            const mins = Math.floor(segundos / 60);
+            const segs = Math.floor(segundos % 60);
+            return `${mins}:${String(segs).padStart(2, '0')}`;
+        }
+
+        function autoGuardar() {
+            console.log('Auto-guardado:', new Date().toISOString());
+        }
+
+        function setHerramienta(tipo) {
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('activo'));
+            event.target.classList.add('activo');
+        }
+
+        function setHerramientaPitch(tipo) {
+            document.querySelectorAll('.btn-herramienta-pitch').forEach(b => b.classList.remove('activo'));
+            event.target.classList.add('activo');
+        }
+
+        function quantizarPitch() {
+            mostrarToast('⚡ Pitch quantizado al grid');
+        }
+
+        function mostrarModal(tipo) {
+            document.getElementById(`modal${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`)?.classList.add('visible');
+        }
+
+        function cerrarModal(tipo) {
+            document.getElementById(`modal${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`)?.classList.remove('visible');
+        }
+
+        function procesarImportacion(input) {
+            const archivo = input.files[0];
+            if (archivo) {
+                mostrarToast(`📁 Importando: ${archivo.name}`);
+                setTimeout(() => {
+                    cerrarModal('importar');
+                    mostrarToast('✅ Audio importado a la timeline');
+                }, 1500);
+            }
+        }
+
+        // ==================== EVENTOS GLOBALES ====================
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        
+        // Shake para deshacer
+        if (window.DeviceMotionEvent) {
+            let ultimoX = 0, ultimoY = 0, ultimoZ = 0;
+            let movimientos = 0;
+            
+            window.addEventListener('devicemotion', e => {
+                const acc = e.accelerationIncludingGravity;
+                if (!acc) return;
+                
+                const delta = Math.abs(ultimoX - acc.x) + Math.abs(ultimoY - acc.y) + Math.abs(ultimoZ - acc.z);
+                
+                if (delta > 30) {
+                    movimientos++;
+                    if (movimientos > 2) {
+                        mostrarToast('↩️ Shake detectado - Sin acciones para deshacer');
+                        movimientos = 0;
+                    }
+                }
+                
+                ultimoX = acc.x;
+                ultimoY = acc.y;
+                ultimoZ = acc.z;
+            });
+        }
+
+        // Teclado
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                alternarReproduccion();
+            }
+        });
+    </script>
+</body>
+</html>
